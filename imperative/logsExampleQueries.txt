@@ -1,0 +1,227 @@
+// Access to demo environment on this link
+// https://portal.loganalytics.io/demo
+
+// How much data we have overall
+union withsource=sourceTable *
+| project sourceTable
+| summarize count()
+
+// How much data we have by table
+union withsource=sourceTable *
+| project sourceTable
+| summarize count() by sourceTable
+
+// Full text search any table any column (well - this is not good way, will be pretty slow)
+search "error"
+
+// Full text search in specific table
+search in ( AzureActivity ) "error" 
+
+// Sample few lines from table
+AzureActivity
+| sample 100
+
+// Get schema
+AzureActivity
+| getschema 
+
+// Project columns
+AzureActivity
+| project TimeGenerated, SourceSystem, CallerIpAddress, OperationNameValue
+
+// Summarize on IP
+AzureActivity
+| summarize IpCount = count() by CallerIpAddress
+
+// Access external reference data
+externaldata(IP:string, Name:string) [@"https://tomuvstore.blob.core.windows.net/public/external.csv"]
+
+// Enrich with external source and JOIN operation
+externaldata(IP:string, Name:string) [@"https://tomuvstore.blob.core.windows.net/public/external.csv"]
+| join kind= rightouter (
+    AzureActivity
+    | summarize IpCount = count() by CallerIpAddress
+) on $left.IP == $right.CallerIpAddress
+| project-away IP
+
+// User variables and calculate column
+let IpSum = AzureActivity
+| summarize count();
+AzureActivity
+| summarize IpCount = count() by CallerIpAddress
+| extend percentage = IpCount/todouble(toscalar(IpSum))*100
+
+// Change value based on condition (fill in "UNKNOWN" when value is null)
+AzureActivity
+| summarize IpCount = count() by CallerIpAddress
+| extend CallerIpEnhanced = iif(CallerIpAddress=="", "UNKNOWN", CallerIpAddress)
+| project-away CallerIpAddress
+
+// Let's see nested JSON field
+AzureActivity
+| sample 10
+| project Properties
+
+// Parse it
+AzureActivity
+| project Properties
+| extend myJson = parse_json(Properties)
+
+// Project and filter
+AzureActivity
+| project TimeGenerated, Properties
+| extend myJson = parse_json(Properties)
+| project TimeGenerated, message = myJson.message, resource = myJson.resource, status = myJson.activityStatusValue
+| where status == "Failed"
+
+// Parsing URL
+datatable(url:string) 
+[
+    "https://user:password@mojestranka.cz:8443/api?filter=jmeno"
+]
+| extend parsed = parse_url(url)
+
+// Regex parsing
+datatable(message:string) 
+[
+    "srcIp=10.1.1.1 dstIp=10.2.2.2 srcMac=00:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=6520",
+    "srcIp=10.3.1.1 dstIp=10.2.2.2 srcMac=00:11:22:33:44:55 dstMac=22:44:33:22:11:00 bytes=4520",
+    "srcIp=10.4.1.1 dstIp=10.1.2.2 srcMac=55:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=5620",
+    "srcIp=10.1.2.1 dstIp=10.5.2.2 srcMac=55:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=2360"
+]
+| project srcIp = extract(@"srcIp=(.*?)\s", 1, message),
+  dstIp = extract(@"dstIp=(.*?)\s", 1, message),
+  srcMac = extract(@"srcMac=(.*?)\s", 1, message),
+  dstMac = extract(@"dstMac=(.*?)\s", 1, message),
+  bytes = extract(@"bytes=(.*?)$", 1, message)
+
+// Find the same messages
+datatable(message:string) 
+[
+    "Crash at 00x1f - rebooting",
+    "Crash at 00x5a - rebooting",
+    "Crash at 00x2e - rebooting",
+    "Crash at 00x3b - rebooting",
+    "Invalid input detected in /data",
+    "Invalid input detected in /api",
+    "Invalid input detected in /data",
+    "Invalid input detected in /data",
+    "Invalid input detected in /api",
+    "Invalid input detected in /images"
+]
+| summarize count() by message
+
+// Find the similar messages
+datatable(message:string) 
+[
+    "Crash at 00x1f - rebooting",
+    "Crash at 00x5a - rebooting",
+    "Crash at 00x2e - rebooting",
+    "Crash at 00x3b - rebooting",
+    "Invalid input detected in /data",
+    "Invalid input detected in /api",
+    "Invalid input detected in /data",
+    "Invalid input detected in /data",
+    "Invalid input detected in /api",
+    "Invalid input detected in /images"
+]
+| reduce by message with threshold=0.5
+
+
+// Complex example
+
+// Sample KubePodInventory table
+KubePodInventory
+| sample 100
+
+// Show containers where label k8s-app is kube-dns or coredns-autoscaler
+KubePodInventory
+| where parse_json(PodLabel)[0]["k8s-app"] in ("kube-dns", "coredns-autoscaler")
+| project Name, appLabel = tostring(parse_json(PodLabel)[0]["k8s-app"])
+| distinct Name, appLabel
+
+// Show logs from containers where label k8s-app is kube-dns or coredns-autoscaler
+KubePodInventory
+| where parse_json(PodLabel)[0]["k8s-app"] in ("kube-dns", "coredns-autoscaler")
+| project Name, appLabel = tostring(parse_json(PodLabel)[0]["k8s-app"]), ContainerID, _ResourceId
+| distinct Name, appLabel, ContainerID, _ResourceId
+| join ContainerLog on ContainerID
+
+// List all the pods count with phase 
+// View pod phase counts based on all phases: Failed, Pending, Unknown, Running, or Succeeded. 
+// To create an alert for this query, click '+ New alert rule'
+//Customize endDateTime, startDateTime to select different time range
+   let endDateTime = now();
+    let startDateTime = ago(1h);
+    let trendBinSize = 1m;
+    KubePodInventory
+    | where TimeGenerated < endDateTime
+    | where TimeGenerated >= startDateTime
+    | distinct ClusterName, TimeGenerated, _ResourceId
+    | summarize ClusterSnapshotCount = count() by bin(TimeGenerated, trendBinSize), ClusterName, _ResourceId
+    | join hint.strategy=broadcast (
+        KubePodInventory
+        | where TimeGenerated < endDateTime
+        | where TimeGenerated >= startDateTime
+        | distinct ClusterName, Computer, PodUid, TimeGenerated, PodStatus, _ResourceId
+        | summarize TotalCount = count(), //Calculating count for per pod status
+                    PendingCount = sumif(1, PodStatus =~ 'Pending'),
+                    RunningCount = sumif(1, PodStatus =~ 'Running'),
+                    SucceededCount = sumif(1, PodStatus =~ 'Succeeded'),
+                    FailedCount = sumif(1, PodStatus =~ 'Failed')
+                 by ClusterName, bin(TimeGenerated, trendBinSize), _ResourceId
+    ) on ClusterName, TimeGenerated, _ResourceId
+    | extend UnknownCount = TotalCount - PendingCount - RunningCount - SucceededCount - FailedCount
+    | project TimeGenerated, _ResourceId,
+    TotalCount = todouble(TotalCount) / ClusterSnapshotCount,
+              PendingCount = todouble(PendingCount) / ClusterSnapshotCount,
+              RunningCount = todouble(RunningCount) / ClusterSnapshotCount,
+              SucceededCount = todouble(SucceededCount) / ClusterSnapshotCount,
+              FailedCount = todouble(FailedCount) / ClusterSnapshotCount,
+              UnknownCount = todouble(UnknownCount) / ClusterSnapshotCount
+
+
+// Extract all
+datatable(message:string) 
+[
+    "srcIp=10.1.1.1 dstIp=10.2.2.2 srcMac=00:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=6520",
+    "srcIp=10.3.1.1 dstIp=10.2.2.2 srcMac=00:11:22:33:44:55 dstMac=22:44:33:22:11:00 bytes=4520",
+    "srcIp=10.4.1.1 dstIp=10.1.2.2 srcMac=55:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=5620",
+    "srcIp=10.1.2.1 dstIp=10.5.2.2 srcMac=55:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=2360"
+]
+| project values = extract_all(@"=(.*?)\s", message)
+
+// Show type firewall
+datatable(message:string) 
+[
+    "type=firewall srcIp=10.1.1.1 dstIp=10.2.2.2 srcMac=00:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=6520",
+    "type=firewall srcIp=10.3.1.1 dstIp=10.2.2.2 srcMac=00:11:22:33:44:55 dstMac=22:44:33:22:11:00 bytes=4520",
+    "type=firewall srcIp=10.4.1.1 dstIp=10.1.2.2 srcMac=55:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=5620",
+    "type=firewall srcIp=10.1.2.1 dstIp=10.5.2.2 srcMac=55:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=2360",
+    "type=log This is free-style text",
+    "type=log This is free-style text2",
+    "type=log This is free-style text3",
+    "type=log This is free-style text4"
+]
+| where extract(@"type=(.*?)\s", 1, message) == "firewall"
+| project srcIp = extract(@"srcIp=(.*?)\s", 1, message),
+  dstIp = extract(@"dstIp=(.*?)\s", 1, message),
+  srcMac = extract(@"srcMac=(.*?)\s", 1, message),
+  dstMac = extract(@"dstMac=(.*?)\s", 1, message),
+  bytes = extract(@"bytes=(.*?)$", 1, message)
+
+// Show type log
+datatable(message:string) 
+[
+    "type=firewall srcIp=10.1.1.1 dstIp=10.2.2.2 srcMac=00:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=6520",
+    "type=firewall srcIp=10.3.1.1 dstIp=10.2.2.2 srcMac=00:11:22:33:44:55 dstMac=22:44:33:22:11:00 bytes=4520",
+    "type=firewall srcIp=10.4.1.1 dstIp=10.1.2.2 srcMac=55:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=5620",
+    "type=firewall srcIp=10.1.2.1 dstIp=10.5.2.2 srcMac=55:11:22:33:44:55 dstMac=55:44:33:22:11:00 bytes=2360",
+    "type=log This is free-style text",
+    "type=log This is free-style text2",
+    "type=log This is free-style text3",
+    "type=log This is free-style text4"
+]
+| where extract(@"type=(.*?)\s", 1, message) == "log"
+| project message = extract(@"type=log(.*)", 1, message)
+

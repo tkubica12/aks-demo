@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-nginx-private-https
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    - http:
+        paths:
+        - path: /
+          backend:
+            serviceName: myweb
+            servicePort: 80
+      host: web2.private.demo
+  tls:
+    - hosts:
+      - web2.private.demo
+      secretName: web2-cert

@@ -1,0 +1,10 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: basic-demo
+spec:
+  chart:
+    git: https://github.com/tkubica12/aks-demo
+    ref: master
+    path: helm/basic-demo
+  values:

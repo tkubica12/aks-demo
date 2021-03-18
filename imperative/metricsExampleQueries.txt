@@ -1,0 +1,440 @@
+// Access to demo environment on this link
+// https://portal.loganalytics.io/demo
+
+// How much data we have by table
+union withsource=sourceTable *
+| project sourceTable
+| summarize count() by sourceTable
+
+// See few random lines from Perf table
+Perf
+| sample 100
+
+// What counters do we see
+Perf
+| distinct CounterName 
+
+// What is schema of Perf table
+Perf
+| getschema
+
+// Let see counter name by Process object type
+Perf
+| where ObjectName == "Processor"
+| distinct CounterName
+
+// Next layer - see instances
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time" 
+| distinct InstanceName
+
+// CPU utilization on 95th percentile
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time"  and InstanceName == "_Total"
+| summarize cpuUsage=percentile(CounterValue, 95) by Computer 
+
+// CPU utilization on 50th 90th 95th and 99th percentile
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time"  and InstanceName == "_Total"
+| summarize cpuUsage_50=percentile(CounterValue, 50), cpuUsage_90=percentile(CounterValue, 90), cpuUsage_95=percentile(CounterValue, 95), cpuUsage_99=percentile(CounterValue, 99) by Computer 
+
+// Join CPU and disk usage data
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time"  and InstanceName == "_Total"
+| summarize cpuUsage=percentile(CounterValue, 95) by Computer 
+| join kind=fullouter ( 
+    Perf
+    | where ObjectName == "LogicalDisk" and CounterName == "% Free Space" and InstanceName == "C:"
+    | summarize diskUsage=percentile(CounterValue, 95) by Computer
+    ) on Computer
+| project-away Computer1
+
+// Aggregation by time
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+| summarize CPUload=percentile(CounterValue, 95) by bin(TimeGenerated, 5m), Computer 
+
+// To reduce number of computers in picture lets select only the most overloaded ones
+// First get query to find 10 top utilized servers by 95th percentile
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+| summarize CPUload=percentile(CounterValue, 95) by Computer
+| sort by CPUload desc nulls last 
+| limit 10 
+
+// Now use inner join to combine both queries
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+| summarize CPUload=percentile(CounterValue, 95) by Computer
+| sort by CPUload desc nulls last 
+| limit 10 
+| join kind= inner (
+    Perf
+    | where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+    | summarize CPUtrend=percentile(CounterValue, 95) by bin(TimeGenerated, 15m), Computer 
+) on Computer 
+| project-away Computer1, CPUload
+
+// Lets show only computers with most variations (spiky workloads)
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+| summarize stdev=stdev(CounterValue) by Computer
+| sort by stdev desc
+| limit 3
+| join kind= inner (
+    Perf
+    | where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+    | summarize CPUtrend=percentile(CounterValue, 95) by bin(TimeGenerated, 15m), Computer 
+) on Computer 
+| project-away Computer1, stdev
+
+// To make sure it works try opposite - most steady workloads
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+| summarize stdev=stdev(CounterValue) by Computer
+| sort by stdev asc
+| limit 3
+| join kind= inner (
+    Perf
+    | where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+    | summarize CPUtrend=percentile(CounterValue, 95) by bin(TimeGenerated, 15m), Computer 
+) on Computer 
+| project-away Computer1, stdev
+
+// We can transform lines data into time-series
+let timeFrom = ago(7d);
+let timeTo = now();
+Perf
+| where ObjectName == "Processor" and CounterName == "% Processor Time" and InstanceName == "_Total"
+| make-series CPUtrend=percentile(CounterValue, 95) on TimeGenerated from timeFrom to timeTo step 1h by Computer 
+
+// PaaS metrics
+AzureMetrics
+| distinct ResourceProvider
+
+// Metrics available for Azure App Service instance
+let WebApp = "QA";
+AzureMetrics
+| where Resource == WebApp
+| where ResourceProvider == "MICROSOFT.WEB" 
+| distinct MetricName
+
+// Let's see requests chart
+let WebApp = "QA";
+let timeFrom = ago(7d);
+let timeTo = now();
+AzureMetrics
+| where TimeGenerated >= timeFrom and TimeGenerated < timeTo
+| where Resource == WebApp
+| where ResourceProvider == "MICROSOFT.WEB" and MetricName == "Requests"
+| summarize requests=avg(Average) by bin(TimeGenerated, 15m) 
+
+// Adhoc custom table to play with
+datatable (Date:datetime, Counter:int)
+    [
+        datetime(2019-09-23), 72,
+        datetime(2019-09-24), 64,
+        datetime(2019-09-25), 65,
+        datetime(2019-09-26), 74,
+        datetime(2019-09-27), 43,
+        datetime(2019-09-28), 7,
+        datetime(2019-09-29), 12,
+        datetime(2019-09-30), 79,
+        datetime(2019-10-01), 66,
+        datetime(2019-10-02), 63,
+        datetime(2019-10-03), 77,
+        datetime(2019-10-04), 41,
+        datetime(2019-10-05), 12,
+        datetime(2019-10-06), 15,
+        datetime(2019-10-07), 78,
+        datetime(2019-10-08), 64,
+        datetime(2019-10-09), 67,
+        datetime(2019-10-10), 73,
+        datetime(2019-10-11), 45,
+        datetime(2019-10-12), 13,
+        datetime(2019-10-13), 11,
+        datetime(2019-10-14), 210,
+        datetime(2019-10-15), 69,
+        datetime(2019-10-16), 62,
+        datetime(2019-10-17), 71,
+        datetime(2019-10-18), 48,
+        datetime(2019-10-19), 11,
+        datetime(2019-10-20), 12,
+        datetime(2019-10-21), 88,
+        datetime(2019-10-22), 72,
+        datetime(2019-10-23), 34,
+        datetime(2019-10-24), 68,
+        datetime(2019-10-25), 41,
+        datetime(2019-10-26), 8,
+        datetime(2019-10-27), 10,
+        datetime(2019-10-28), 90,
+        datetime(2019-10-29), 69,
+        datetime(2019-10-30), 62,
+        datetime(2019-10-31), 71,
+        datetime(2019-11-01), 45,
+        datetime(2019-11-02), 12,
+        datetime(2019-11-03), 11
+    ]
+| limit 100
+
+// Transform to time-series
+datatable (Date:datetime, Counter:int)
+    [
+        datetime(2019-09-23), 72,
+        datetime(2019-09-24), 64,
+        datetime(2019-09-25), 65,
+        datetime(2019-09-26), 74,
+        datetime(2019-09-27), 43,
+        datetime(2019-09-28), 7,
+        datetime(2019-09-29), 12,
+        datetime(2019-09-30), 79,
+        datetime(2019-10-01), 66,
+        datetime(2019-10-02), 63,
+        datetime(2019-10-03), 77,
+        datetime(2019-10-04), 41,
+        datetime(2019-10-05), 12,
+        datetime(2019-10-06), 15,
+        datetime(2019-10-07), 78,
+        datetime(2019-10-08), 64,
+        datetime(2019-10-09), 67,
+        datetime(2019-10-10), 73,
+        datetime(2019-10-11), 45,
+        datetime(2019-10-12), 13,
+        datetime(2019-10-13), 11,
+        datetime(2019-10-14), 210,
+        datetime(2019-10-15), 69,
+        datetime(2019-10-16), 62,
+        datetime(2019-10-17), 71,
+        datetime(2019-10-18), 48,
+        datetime(2019-10-19), 11,
+        datetime(2019-10-20), 12,
+        datetime(2019-10-21), 88,
+        datetime(2019-10-22), 72,
+        datetime(2019-10-23), 34,
+        datetime(2019-10-24), 68,
+        datetime(2019-10-25), 41,
+        datetime(2019-10-26), 8,
+        datetime(2019-10-27), 10,
+        datetime(2019-10-28), 90,
+        datetime(2019-10-29), 69,
+        datetime(2019-10-30), 62,
+        datetime(2019-10-31), 71,
+        datetime(2019-11-01), 45,
+        datetime(2019-11-02), 12,
+        datetime(2019-11-03), 11
+    ]
+| make-series counter=avg(Counter) on Date from datetime(2019-09-23) to datetime(2019-11-03) step 1d
+
+// Use ML to detect anomalies
+datatable (Date:datetime, Counter:int)
+    [
+        datetime(2019-09-23), 72,
+        datetime(2019-09-24), 64,
+        datetime(2019-09-25), 65,
+        datetime(2019-09-26), 74,
+        datetime(2019-09-27), 43,
+        datetime(2019-09-28), 7,
+        datetime(2019-09-29), 12,
+        datetime(2019-09-30), 79,
+        datetime(2019-10-01), 66,
+        datetime(2019-10-02), 63,
+        datetime(2019-10-03), 77,
+        datetime(2019-10-04), 41,
+        datetime(2019-10-05), 12,
+        datetime(2019-10-06), 15,
+        datetime(2019-10-07), 78,
+        datetime(2019-10-08), 64,
+        datetime(2019-10-09), 67,
+        datetime(2019-10-10), 73,
+        datetime(2019-10-11), 45,
+        datetime(2019-10-12), 13,
+        datetime(2019-10-13), 11,
+        datetime(2019-10-14), 210,
+        datetime(2019-10-15), 69,
+        datetime(2019-10-16), 62,
+        datetime(2019-10-17), 71,
+        datetime(2019-10-18), 48,
+        datetime(2019-10-19), 11,
+        datetime(2019-10-20), 12,
+        datetime(2019-10-21), 88,
+        datetime(2019-10-22), 72,
+        datetime(2019-10-23), 34,
+        datetime(2019-10-24), 68,
+        datetime(2019-10-25), 41,
+        datetime(2019-10-26), 8,
+        datetime(2019-10-27), 10,
+        datetime(2019-10-28), 90,
+        datetime(2019-10-29), 69,
+        datetime(2019-10-30), 62,
+        datetime(2019-10-31), 71,
+        datetime(2019-11-01), 45,
+        datetime(2019-11-02), 12,
+        datetime(2019-11-03), 11
+    ]
+| make-series series=avg(Counter) on Date from datetime(2019-09-23) to datetime(2019-11-03) step 1d
+| extend series_decompose_anomalies(series)
+| project Date, series, anomaly=series_decompose_anomalies_series_ad_score
+| render timechart 
+
+// Separate baseline patterns and calculate overall trend
+datatable (Date:datetime, Counter:int)
+    [
+        datetime(2019-09-23), 72,
+        datetime(2019-09-24), 64,
+        datetime(2019-09-25), 65,
+        datetime(2019-09-26), 74,
+        datetime(2019-09-27), 43,
+        datetime(2019-09-28), 7,
+        datetime(2019-09-29), 12,
+        datetime(2019-09-30), 79,
+        datetime(2019-10-01), 66,
+        datetime(2019-10-02), 63,
+        datetime(2019-10-03), 77,
+        datetime(2019-10-04), 41,
+        datetime(2019-10-05), 12,
+        datetime(2019-10-06), 15,
+        datetime(2019-10-07), 78,
+        datetime(2019-10-08), 64,
+        datetime(2019-10-09), 67,
+        datetime(2019-10-10), 73,
+        datetime(2019-10-11), 45,
+        datetime(2019-10-12), 13,
+        datetime(2019-10-13), 11,
+        datetime(2019-10-14), 210,
+        datetime(2019-10-15), 69,
+        datetime(2019-10-16), 62,
+        datetime(2019-10-17), 71,
+        datetime(2019-10-18), 48,
+        datetime(2019-10-19), 11,
+        datetime(2019-10-20), 12,
+        datetime(2019-10-21), 88,
+        datetime(2019-10-22), 72,
+        datetime(2019-10-23), 34,
+        datetime(2019-10-24), 68,
+        datetime(2019-10-25), 41,
+        datetime(2019-10-26), 8,
+        datetime(2019-10-27), 10,
+        datetime(2019-10-28), 90,
+        datetime(2019-10-29), 69,
+        datetime(2019-10-30), 62,
+        datetime(2019-10-31), 71,
+        datetime(2019-11-01), 45,
+        datetime(2019-11-02), 12,
+        datetime(2019-11-03), 11
+    ]
+| make-series series=avg(Counter) on Date from datetime(2019-09-23) to datetime(2019-11-03) step 1d
+| extend series_decompose(series)
+| project Date, series, baseline=series_decompose_series_baseline, trend=series_decompose_series_trend
+| render timechart
+
+// We clearly see periodic behavior from graph, but with more data it can be less visible
+// Let's detect periods
+datatable (Date:datetime, Counter:int)
+    [
+        datetime(2019-09-23), 72,
+        datetime(2019-09-24), 64,
+        datetime(2019-09-25), 65,
+        datetime(2019-09-26), 74,
+        datetime(2019-09-27), 43,
+        datetime(2019-09-28), 7,
+        datetime(2019-09-29), 12,
+        datetime(2019-09-30), 79,
+        datetime(2019-10-01), 66,
+        datetime(2019-10-02), 63,
+        datetime(2019-10-03), 77,
+        datetime(2019-10-04), 41,
+        datetime(2019-10-05), 12,
+        datetime(2019-10-06), 15,
+        datetime(2019-10-07), 78,
+        datetime(2019-10-08), 64,
+        datetime(2019-10-09), 67,
+        datetime(2019-10-10), 73,
+        datetime(2019-10-11), 45,
+        datetime(2019-10-12), 13,
+        datetime(2019-10-13), 11,
+        datetime(2019-10-14), 210,
+        datetime(2019-10-15), 69,
+        datetime(2019-10-16), 62,
+        datetime(2019-10-17), 71,
+        datetime(2019-10-18), 48,
+        datetime(2019-10-19), 11,
+        datetime(2019-10-20), 12,
+        datetime(2019-10-21), 88,
+        datetime(2019-10-22), 72,
+        datetime(2019-10-23), 34,
+        datetime(2019-10-24), 68,
+        datetime(2019-10-25), 41,
+        datetime(2019-10-26), 8,
+        datetime(2019-10-27), 10,
+        datetime(2019-10-28), 90,
+        datetime(2019-10-29), 69,
+        datetime(2019-10-30), 62,
+        datetime(2019-10-31), 71,
+        datetime(2019-11-01), 45,
+        datetime(2019-11-02), 12,
+        datetime(2019-11-03), 11
+    ]
+| make-series series=avg(Counter) on Date from datetime(2019-09-23) to datetime(2019-11-03) step 1d
+| extend series_periods_detect(series, 1, 8, 3)
+
+// Forecasting future values
+datatable (Date:datetime, Counter:int)
+    [
+        datetime(2019-09-23), 72,
+        datetime(2019-09-24), 64,
+        datetime(2019-09-25), 65,
+        datetime(2019-09-26), 74,
+        datetime(2019-09-27), 43,
+        datetime(2019-09-28), 7,
+        datetime(2019-09-29), 12,
+        datetime(2019-09-30), 79,
+        datetime(2019-10-01), 66,
+        datetime(2019-10-02), 63,
+        datetime(2019-10-03), 77,
+        datetime(2019-10-04), 41,
+        datetime(2019-10-05), 12,
+        datetime(2019-10-06), 15,
+        datetime(2019-10-07), 78,
+        datetime(2019-10-08), 64,
+        datetime(2019-10-09), 67,
+        datetime(2019-10-10), 73,
+        datetime(2019-10-11), 45,
+        datetime(2019-10-12), 13,
+        datetime(2019-10-13), 11,
+        datetime(2019-10-14), 210,
+        datetime(2019-10-15), 69,
+        datetime(2019-10-16), 62,
+        datetime(2019-10-17), 71,
+        datetime(2019-10-18), 48,
+        datetime(2019-10-19), 11,
+        datetime(2019-10-20), 12,
+        datetime(2019-10-21), 88,
+        datetime(2019-10-22), 72,
+        datetime(2019-10-23), 34,
+        datetime(2019-10-24), 68,
+        datetime(2019-10-25), 41,
+        datetime(2019-10-26), 8,
+        datetime(2019-10-27), 10,
+        datetime(2019-10-28), 90,
+        datetime(2019-10-29), 69,
+        datetime(2019-10-30), 62,
+        datetime(2019-10-31), 71,
+        datetime(2019-11-01), 45,
+        datetime(2019-11-02), 12,
+        datetime(2019-11-03), 11
+    ]
+| make-series series=avg(Counter) on Date from datetime(2019-09-23) to datetime(2019-11-09) step 1d
+| extend forecast=series_decompose_forecast(series, 7, -1, 'linefit', 0.1)
+| render timechart
+
+// Enrich data by combining Kubernetes inventory with perf data
+// Show Perf of containers where label k8s-app is kube-dns or coredns-autoscaler
+KubePodInventory
+| where parse_json(PodLabel)[0]["k8s-app"] in ("kube-dns", "coredns-autoscaler")
+| project InstanceName = strcat(ClusterId, "/", ContainerName), ClusterName, Namespace, Name
+| join (
+    Perf
+    | where ObjectName == "K8SContainer" and CounterName == "cpuUsageNanoCores" 
+    | summarize CPUload95 = percentile(CounterValue, 95) by InstanceName
+    ) on InstanceName
+| project ClusterName, Namespace, Name, CPUload95

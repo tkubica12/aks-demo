@@ -5,8 +5,12 @@
 - [Authentication](#authentication)
 - [Basics, GUI, upgrades](#basics-gui-upgrades)
 - [Exposing applications](#exposing-applications)
+  - [Managed Ingress with Azure Application Gateway](#managed-ingress-with-azure-application-gateway)
+  - [Unmanaged Ingress with NGINX](#unmanaged-ingress-with-nginx)
 - [Scaling](#scaling)
 - [Secrets management](#secrets-management)
+  - [Access secret in Key Vault using SecretsProviderClass](#access-secret-in-key-vault-using-secretsproviderclass)
+  - [Access secret using application layer](#access-secret-using-application-layer)
 - [Azure Monitor for Containers](#azure-monitor-for-containers)
 - [Distributed tracing](#distributed-tracing)
 - [Destroy environment](#destroy-environment)
@@ -78,7 +82,7 @@ az aks create -n aks \
     -u tomas \
     --assign-identity $(az identity show -n aks -g $rg --query id -o tsv) \
     --enable-aad \
-    --enable-addons monitoring,azure-policy,ingress-appgw \
+    --enable-addons monitoring,azure-policy,ingress-appgw,azure-keyvault-secrets-provider \
     --enable-azure-rbac \
     --enable-managed-identity \
     --enable-pod-identity  \
@@ -147,6 +151,8 @@ Add new nodepool with different SKU using GUI
 
 # Exposing applications
 
+## Managed Ingress with Azure Application Gateway
+
 Expose web via App Gw using private IP using HTTP
 
 ```bash
@@ -159,7 +165,7 @@ az network application-gateway frontend-ip create -n privateIp \
 kubectl apply -f serviceClusterIp.yaml
 kubectl apply -f ingressAgicPrivateHttp.yaml
 
-ssh $(az network public-ip show -n jumpPublicIP -g $rg --query ipAddress -o tsv) 'curl http://web1.private.demo -ks'
+ssh $(az network public-ip show -n jumpPublicIP -g $rg --query ipAddress -o tsv) 'curl http://10.0.0.100 -H "Host: web1.private.demo" -ks'
 ```
 
 Expose web via App Gw using private IP using HTTPS and cert-manager
@@ -168,9 +174,11 @@ Expose web via App Gw using private IP using HTTPS and cert-manager
 kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
 kubectl apply -f certManagerIssuer.yaml
 kubectl apply -f ingressAgicPrivateHttps.yaml
+
+ssh $(az network public-ip show -n jumpPublicIP -g $rg --query ipAddress -o tsv) 'curl https://10.0.0.100 -H "Host: web1.private.demo" -ks'
 ```
 
-Configure External DNS to create records in Azure Private DNS (or Public)
+We will not configure External DNS to create records in Azure Private DNS (or Public).
 
 Create new identity for External DNS (you can use cluster identity, but let's go least privilege)
 
@@ -219,6 +227,8 @@ That's it, check DNS record is created and test from VM
 ```bash
 ssh $(az network public-ip show -n jumpPublicIP -g $rg --query ipAddress -o tsv) 'curl https://web1.private.demo -ks'
 ```
+
+## Unmanaged Ingress with NGINX
 
 Configure unmanaged Ingress with NGINX on internal IP
 
@@ -290,11 +300,29 @@ az keyvault create -g $rg -n $keyvault --enable-rbac-authorization
 Assign management role to yourself
 
 ```bash
-az role assignment create --role "Private DNS Zone Contributor" \
-    --assignee-object-id $(az account show --query id -o tsv)  \
-    --scope $(az keyvault show -g $RG -n $keyvault --query id -o tsv)
-
+az role assignment create --role "Key Vault Administrator" \
+    --assignee $(az account show --query user.name -o tsv)  \
+    --scope $(az keyvault show -g $rg -n $keyvault --query id -o tsv)
 ```
+
+Create secret
+
+```bash
+az keyvault secret set -n mysecret --vault-name $keyvault --value MySuperPassword
+```
+
+## Access secret in Key Vault using SecretsProviderClass
+
+```bash
+```
+
+## Access secret using application layer 
+
+This leverages managed identity eg. how client-side encryption SDK would do (SQL AlwaysEncrypted, blob client-side encryption SDK, ...)
+
+```bash
+```
+
 
 # Azure Monitor for Containers
 

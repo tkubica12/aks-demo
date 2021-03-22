@@ -56,7 +56,7 @@ spec:
         - --source=ingress
         - --domain-filter=private.demo
         - --provider=azure-private-dns
-        - --azure-resource-group=fortuna-aks-rg 
+        - --azure-resource-group=aks-imperative-rg
         - --azure-subscription-id=a0f4a733-4fce-4d49-b8a8-d30541fc1b45
         volumeMounts:
         - name: azure-config-file

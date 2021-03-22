@@ -24,9 +24,9 @@ spec:
       resourceURI: Microsoft.Network/applicationGateways/appgw
       tenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
       subscriptionId: a0f4a733-4fce-4d49-b8a8-d30541fc1b45
-      resourceGroupName: MC_fortuna-aks-rg_aks_westeurope
+      resourceGroupName: MC_aks-imperative-rg_aks_westeurope
       metricName: AvgRequestCountPerHealthyHost
-      metricFilter: BackendSettingsPool eq 'pool-default-kedaweb-80-bp-80~bp-default-kedaweb-80-80-ingress-agic-kedaweb' 
+      metricFilter: BackendSettingsPool eq 'pool-default-myweb-80-bp-80~bp-default-myweb-80-80-ingress-agic-kedaweb' 
       metricAggregationInterval: "0:1:0"
       metricAggregationType: Average
       targetValue: "230"

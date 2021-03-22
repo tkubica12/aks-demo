@@ -14,7 +14,7 @@ az aks get-credentials -g aks-demo -n aks-demo --admin
 
 ## Connect cluster to GitOps
 ```bash
-az k8sconfiguration create -c aks-demo \
+az k8s-configuration create -c aks-demo \
     --cluster-type managedClusters \
     -n common \
     -g aks-demo \
@@ -22,7 +22,7 @@ az k8sconfiguration create -c aks-demo \
     --operator-params "'--git-readonly --git-path gitops/common'" \
     --repository-url https://github.com/tkubica12/aks-demo \
     --enable-helm-operator \
-    --helm-operator-params '--set helm.versions=v3' \
+    --helm-operator-params '--set helm.versions=v3 --charts-sync-interval 1' \
     --scope cluster
 ```
 

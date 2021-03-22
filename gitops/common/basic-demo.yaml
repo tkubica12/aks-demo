@@ -7,4 +7,3 @@ spec:
     git: https://github.com/tkubica12/aks-demo
     ref: master
     path: helm/basic-demo
-  values:

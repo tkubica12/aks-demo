@@ -18,6 +18,9 @@ Implemented features
 - AKS deployment
 - AAD integration
 - Scaling with KEDA
+- Managed Ingress controller
+- External DNS
+- Pod identity
 
 # Design goals for declarative demo
 - Ability to spin everything up using GitHub Actions (might require some work to clone and modify for different subscription/project)

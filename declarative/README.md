@@ -22,7 +22,7 @@ az k8s-configuration create -c aks-demo \
     --operator-params "'--git-readonly --git-path gitops/common'" \
     --repository-url https://github.com/tkubica12/aks-demo \
     --enable-helm-operator \
-    --helm-operator-params '--set helm.versions=v3 --charts-sync-interval 1' \
+    --helm-operator-params '--set helm.versions=v3' \
     --scope cluster
 ```
 

@@ -312,8 +312,17 @@ az keyvault secret set -n mysecret --vault-name $keyvault --value MySuperPasswor
 ```
 
 ## Access secret in Key Vault using SecretsProviderClass
+StorageProviderClass can access Key Vault using managed identity. AKS addon has created one for us, let's give it read access to secrets.
+
+-g $(az aks show -n aks -g $rg --query nodeResourceGroup -o tsv)
 
 ```bash
+az role assignment create --role "Key Vault Administrator" \
+    --assignee-object-id $(az identity show -n azurekeyvaultsecretsprovider-aks -g $(az aks show -n aks -g $rg --query nodeResourceGroup -o tsv) --query principalId -o tsv)  \
+    --scope $(az keyvault show -g $rg -n $keyvault --query id -o tsv)
+az role assignment create --role "Reader" \
+    --assignee-object-id $(az identity show -n azurekeyvaultsecretsprovider-aks -g $(az aks show -n aks -g $rg --query nodeResourceGroup -o tsv) --query principalId -o tsv)  \
+    --scope $(az keyvault show -g $rg -n $keyvault --query id -o tsv)
 ```
 
 ## Access secret using application layer 

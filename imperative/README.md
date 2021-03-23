@@ -311,27 +311,57 @@ Create secret
 az keyvault secret set -n mysecret --vault-name $keyvault --value MySuperPassword
 ```
 
-## Access secret in Key Vault using SecretsProviderClass
-StorageProviderClass can access Key Vault using managed identity. AKS addon has created one for us, let's give it read access to secrets.
-
--g $(az aks show -n aks -g $rg --query nodeResourceGroup -o tsv)
+Create identity, assign secrets read role to it and add it to AKS+
 
 ```bash
-az role assignment create --role "Key Vault Administrator" \
-    --assignee-object-id $(az identity show -n azurekeyvaultsecretsprovider-aks -g $(az aks show -n aks -g $rg --query nodeResourceGroup -o tsv) --query principalId -o tsv)  \
+az identity create -n secretsReader -g $rg
+sleep 60
+
+az role assignment create --role "Key Vault Secrets User" \
+    --assignee-object-id $(az identity show -n secretsReader -g $rg --query principalId -o tsv)  \
     --scope $(az keyvault show -g $rg -n $keyvault --query id -o tsv)
 az role assignment create --role "Reader" \
-    --assignee-object-id $(az identity show -n azurekeyvaultsecretsprovider-aks -g $(az aks show -n aks -g $rg --query nodeResourceGroup -o tsv) --query principalId -o tsv)  \
-    --scope $(az keyvault show -g $rg -n $keyvault --query id -o tsv)
+    --assignee-object-id $(az identity show -n externalDns -g $rg --query principalId -o tsv)  \
+    -g $(az aks show -g $rg -n aks --query nodeResourceGroup -o tsv)
+
+az aks pod-identity add -g $rg \
+    --cluster-name aks \
+    --namespace default \
+    --name secrets-reader \
+    --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
+```
+
+## Access secret in Key Vault using SecretsProviderClass
+
+StorageProviderClass can access Key Vault using pod identity. Let's create managed identity, assign secrets read permission and assign to AKS.
+
+Create StorageProviderClass referencing our Key Vault.
+
+```bash
+kubectl apply -f secretProviderClass.yaml
+```
+
+Test access to secret
+
+```bash
+kubectl apply -f secretViaProvider.yaml
+kubectl exec nginx-secrets-store-inline -it -- bash
+    ls /mnt/secrets-store/
+    cat /mnt/secrets-store/mysecret
+    exit
 ```
 
 ## Access secret using application layer 
 
-This leverages managed identity eg. how client-side encryption SDK would do (SQL AlwaysEncrypted, blob client-side encryption SDK, ...)
+Run Pod with assigned identity, use API to get token and Key Vault API to read secret.
 
 ```bash
+kubectl apply -f secretViaApi.yaml
+kubectl exec nginx-secrets-api -it -- bash
+    export keyvault=tomaskeyvault45
+    export token=$(curl -s http://169.254.169.254/metadata/identity/oauth2/token?resource=https://vault.azure.net -H 'Metadata: true' | jq -r '.access_token')
+    curl -H "Authorization: Bearer ${token}" https://$keyvault.vault.azure.net/secrets/mysecret?api-version=7.0
 ```
-
 
 # Azure Monitor for Containers
 

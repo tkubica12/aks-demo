@@ -21,6 +21,7 @@ Implemented features
 - Managed Ingress controller
 - External DNS
 - Pod identity
+- Secrets management with Azure Key Vault and CSI
 
 # Design goals for declarative demo
 - Ability to spin everything up using GitHub Actions (might require some work to clone and modify for different subscription/project)

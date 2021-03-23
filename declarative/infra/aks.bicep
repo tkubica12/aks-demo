@@ -2,7 +2,9 @@
 param sshKey string
 
 param aksSubnetId string
-param appgwSubnetId string
+// param appgwSubnetId string
+param appgwId string
+param appgwName string
 param logAnalyticsResourceId string
 
 var location = resourceGroup().location
@@ -15,7 +17,7 @@ resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-3
 }
 
 resource aksIdentityRoleCluster 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(roleContributor, resourceGroup().id)
+  name: guid('aksIdentityRoleCluster', resourceGroup().id)
   properties: {
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleContributor)
@@ -24,11 +26,25 @@ resource aksIdentityRoleCluster 'Microsoft.Authorization/roleAssignments@2020-04
 }
 
 resource aksIdentityRoleAcr 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(roleAcrPull, resourceGroup().id)
+  name: guid('aksIdentityRoleAcr', resourceGroup().id)
   properties: {
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAcrPull)
     principalId: aks.properties.identityProfile.kubeletidentity.objectId
+  }
+}
+
+resource appGwExisting 'Microsoft.Network/applicationGateways@2020-05-01' existing = {
+  name: 'appgw'
+}
+
+resource aksIdentityRoleAppgw 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid('aksIdentityRoleAppgw', resourceGroup().id)
+  scope: appGwExisting
+  properties: {
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleContributor)
+    principalId: aks.properties.addonProfiles.ingressApplicationGateway.identity.objectId
   }
 }
 
@@ -109,8 +125,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2020-09-01' = {
       'ingressApplicationGateway': {
         enabled: true
         config: {
-            applicationGatewayName: 'appgw'
-            subnetId: appgwSubnetId
+            applicationGatewayId: appgwId
             watchNamespace: ''
         }
     }

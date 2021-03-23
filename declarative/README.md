@@ -9,7 +9,7 @@ az bicep build -f infra/main.bicep --stdout
 az bicep build -f infra/main.bicep
 az group create -n aks-demo -l westeurope
 az deployment group create -g aks-demo --template-file infra/main.json --parameters sshKey=@~/.ssh/id_rsa.pub
-az aks get-credentials -g aks-demo -n aks-demo --admin
+az aks get-credentials -g aks-demo -n aks-demo --admin --overwrite
 ```
 
 ## Connect cluster to GitOps

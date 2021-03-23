@@ -31,7 +31,8 @@ module aks './aks.bicep' = {
   ]
   params:{
     aksSubnetId: networking.outputs.aksSubnetId
-    appgwSubnetId: networking.outputs.appgwSubnetId
+    appgwId: networking.outputs.appgwId
+    appgwName: networking.outputs.appgwName
     logAnalyticsResourceId: monitoring.outputs.logAnalyticsResourceId
     sshKey: sshKey
   }

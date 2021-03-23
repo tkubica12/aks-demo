@@ -13,6 +13,11 @@
   - [Access secret using application layer](#access-secret-using-application-layer)
 - [Azure Monitor for Containers](#azure-monitor-for-containers)
 - [Distributed tracing](#distributed-tracing)
+- [Stateful workloads](#stateful-workloads)
+  - [Connect to Azure PaaS](#connect-to-azure-paas)
+  - [Using Azure Disk](#using-azure-disk)
+  - [Using Azure Files](#using-azure-files)
+  - [Working with StatefulSets](#working-with-statefulsets)
 - [Destroy environment](#destroy-environment)
 
 # Get parameters
@@ -86,6 +91,7 @@ az aks create -n aks \
     --enable-azure-rbac \
     --enable-managed-identity \
     --enable-pod-identity  \
+    --aks-custom-headers EnableAzureDiskFileCSIDriver=true \
     --kubernetes-version 1.19.6 \
     --network-plugin azure \
     --network-policy azure \
@@ -321,7 +327,7 @@ az role assignment create --role "Key Vault Secrets User" \
     --assignee-object-id $(az identity show -n secretsReader -g $rg --query principalId -o tsv)  \
     --scope $(az keyvault show -g $rg -n $keyvault --query id -o tsv)
 az role assignment create --role "Reader" \
-    --assignee-object-id $(az identity show -n externalDns -g $rg --query principalId -o tsv)  \
+    --assignee-object-id $(az identity show -n secretsReader -g $rg --query principalId -o tsv)  \
     -g $(az aks show -g $rg -n aks --query nodeResourceGroup -o tsv)
 
 az aks pod-identity add -g $rg \
@@ -393,5 +399,63 @@ helm upgrade -i tracing ./helm/opentelemetry -n default \
     --set mysql_password=Azure12345678
 ```
 
+# Stateful workloads
+## Connect to Azure PaaS
+
+## Using Azure Disk
+
+Check storage classes
+
+```bash
+kubectl get storageclasses
+```
+
+Create PVC. With CSI driver for Azure Disk actual resource in Azure will not be created until first consumer (pod) - this is because disks are zonal resources (disks must by in the same zone as compute currently - note ZRS is in preview, will be available in future).\
+
+```bash
+kubectl apply -f pvcDisk.yaml
+```
+
+Create Pod without specifying zone - you will see disk is created in the same zone as on node on which Pod has been scheduled.
+
+```bash
+kubectl get pv
+kubectl apply -f pvcDiskPod.yaml
+kubectl get pv
+```
+
+Clean up
+
+```bash
+kubectl delete -f pvcDiskPod.yaml
+kubectl delete -f pvcDisk.yaml
+```
+
+## Using Azure Files
+
+In first example we will create file share manually and just map it to pod as shared read volume (eg. shared web content scenario).
+
+```bash
+# Create file share and upload image
+export storageName=tomasdemostore59
+export nodeRg=$(az aks show -g $rg -n aks --query nodeResourceGroup -o tsv)
+az storage account create -n $storageName -g $nodeRg
+export AZURE_STORAGE_CONNECTION_STRING=$(az storage account show-connection-string -n $storageName -g $nodeRg --query connectionString -o tsv)
+az storage share create -n images 
+az storage file upload -s images --source ../images/ms.jpg
+az storage file upload -s images --source ../images/index.html
+
+# Prepare secret
+kubectl create secret generic share-secret --from-literal accountname=$storageName --from-literal accountkey="$(az storage account keys list -n $storageName -g $nodeRg --query [0].value -o tsv)" --type=Opaque
+
+# Map pod to share and test
+kubectl apply -f pvcShareDemo.yaml
+```
+
+## Working with StatefulSets
+
 # Destroy environment
+
+```bash
 az group delete -n $rg -y --no-wait
+```

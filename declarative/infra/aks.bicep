@@ -2,7 +2,6 @@
 param sshKey string
 
 param aksSubnetId string
-// param appgwSubnetId string
 param appgwId string
 param appgwName string
 param logAnalyticsResourceId string
@@ -11,6 +10,7 @@ var location = resourceGroup().location
 var roleContributor = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
 var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 
+// Identities and RBAC
 resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'aks'
   location: location
@@ -48,7 +48,13 @@ resource aksIdentityRoleAppgw 'Microsoft.Authorization/roleAssignments@2020-04-0
   }
 }
 
-resource aks 'Microsoft.ContainerService/managedClusters@2020-09-01' = {
+resource externalDnsIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: 'externalDns'
+  location: location
+}
+
+// AKS cluster
+resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
   name: 'aks-demo'
   location: location
   identity: {
@@ -58,6 +64,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2020-09-01' = {
     }
   }
   properties: {
+    kubernetesVersion: '1.19.6'
     dnsPrefix: 'aks-demo'
     agentPoolProfiles: [
       {
@@ -129,6 +136,28 @@ resource aks 'Microsoft.ContainerService/managedClusters@2020-09-01' = {
             watchNamespace: ''
         }
     }
+    }
+    podIdentityProfile: {
+      enabled: true
+      allowNetworkPluginKubenet: false
+      userAssignedIdentities: [
+        {
+          name: 'secrets-reader'
+          namespace: 'default'
+          identity: {
+            resourceId: externalDnsIdentity.id
+            clientId: externalDnsIdentity.properties.clientId
+            objectId: externalDnsIdentity.properties.principalId
+          }
+        }
+      ]
+      // userAssignedIdentityExceptions: [
+      //   {
+      //     name: 'string'
+      //     namespace: 'string'
+      //     podLabels: {}
+      //   }
+      // ]
     }
   }
 }

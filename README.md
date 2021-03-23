@@ -31,11 +31,10 @@ Implemented features
 Implemented features
 - AKS deployment
 - AAD integration
+- Managed Ingress controller
+
 
 # Backlog of features
-- Managed Ingress controller
-- External DNS
-- Pod identity
 - Open Service Mesh
 - Canary and A/B testing with Flagger
 - Scaling with KEDA

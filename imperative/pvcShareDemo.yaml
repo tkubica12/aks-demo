@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-azurefileexisting
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - mfsymlinks
+  csi:
+    driver: file.csi.azure.com
+    readOnly: false
+    volumeHandle: images
+    volumeAttributes:
+      shareName: images
+    nodeStageSecretRef:
+      name: share-secret
+      namespace: default
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-azurefileexisting
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  volumeName: pv-azurefileexisting
+  storageClassName: ""
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: sharedemo
+  labels:
+    app: sharedemo
+spec:
+  containers:
+    - image: nginx
+      name: nginx
+      volumeMounts:
+        - name: azurefile
+          mountPath: "/usr/share/nginx/html"
+      ports:
+      - containerPort: 80
+  volumes:
+    - name: azurefile
+      persistentVolumeClaim:
+        claimName: pvc-azurefileexisting
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: sharedemo-service-ext-public
+spec:
+  selector:
+    app: sharedemo
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

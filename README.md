@@ -22,6 +22,8 @@ Implemented features
 - External DNS
 - Pod identity
 - Secrets management with Azure Key Vault and CSI
+- Using Azure Database for PostgreSQL with Private Link, AAD integration and Pod identity
+- Persistent Volume basics with Disks and Files
 
 # Design goals for declarative demo
 - Ability to spin everything up using GitHub Actions (might require some work to clone and modify for different subscription/project)

@@ -505,7 +505,25 @@ az aks pod-identity add -g $rg \
     --name psql-user \
     --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
 
-TO BE CONTINUED
+# Get client ID and configure user in database
+az identity show -n psqlUser -g $rg --query clientId -o tsv
+export PGPASSWORD=$(az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv)
+psql --host=$psql.postgres.database.azure.com --port=5432 --username=tokubica@microsoft.com@$psql --dbname=postgres --set=sslmode=require
+    SET aad_validate_oids_in_tenant = off;
+    CREATE ROLE myuser WITH LOGIN PASSWORD 'd9cd604f-181f-4f39-b63f-0ef328e7c248' IN ROLE azure_ad_user;
+    exit
+
+# Deploy Pod with mapped identity
+kubectl apply -f psqlClientIdentity.yaml
+
+# Connect to Pod, get token and connect to database
+kubectl exec psql-client-identity -ti -- sh
+    apk add curl
+    apk add jq
+    export PGPASSWORD=`curl -s 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https%3A%2F%2Fossrdbms-aad.database.windows.net' -H Metadata:true | jq -r .access_token`
+    psql --host=tomaspsqldemo56.postgres.database.azure.com --port=5432 --username=myuser@tomaspsqldemo56 --dbname=postgres
+    exit
+    exit
 ```
 
 ## Using Azure Disk

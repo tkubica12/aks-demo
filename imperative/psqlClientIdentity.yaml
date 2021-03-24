@@ -1,0 +1,14 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: psql-client-identity
+  labels:
+    aadpodidbinding: psql-user
+spec:
+  containers:
+    - image: governmentpaas/psql
+      name: psql-client
+      command:
+        - "tail"
+        - "-f"
+        - "/dev/null"

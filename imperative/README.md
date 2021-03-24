@@ -43,7 +43,7 @@ az network vnet create -n mynet -g $rg --address-prefixes 10.0.0.0/16
 az network vnet subnet create -n appgw-subnet --vnet-name mynet -g $rg --address-prefixes 10.0.0.0/24
 az network vnet subnet create -n intlb-subnet --vnet-name mynet -g $rg --address-prefixes 10.0.1.0/24
 az network vnet subnet create -n jump-subnet --vnet-name mynet -g $rg --address-prefixes 10.0.2.0/24
-az network vnet subnet create -n aks-subnet --vnet-name mynet -g $rg --address-prefixes 10.0.128.0/22
+az network vnet subnet create -n aks-subnet --vnet-name mynet -g $rg --address-prefixes 10.0.128.0/22 --disable-private-endpoint-network-policies 
 ```
 
 Create Private DNS
@@ -401,6 +401,112 @@ helm upgrade -i tracing ./helm/opentelemetry -n default \
 
 # Stateful workloads
 ## Connect to Azure PaaS
+
+First let's create PSQL with public access
+
+```bash
+export psql=tomaspsqldemo56
+az postgres server create -n $psql \
+    -g $rg \
+    --backup-retention 35 \
+    --minimal-tls-version TLS1_2 \
+    --sku-name GP_Gen5_2 \
+    --admin-user tomas \
+    --admin-password Azure12345678 \
+    --public all \
+    -l $(az group show -n $rg --query location -o tsv)
+```
+
+Test connectivity from local PC
+
+```bash
+psql --host=$psql.postgres.database.azure.com --port=5432 --username=tomas@$psql --dbname=postgres
+CREATE TABLE IF NOT EXISTS mytable (
+   message VARCHAR ( 100 )
+);
+INSERT INTO mytable VALUES ('This is my message from PC');
+SELECT * FROM mytable;
+exit
+```
+
+Connect from Kubernetes
+
+```bash
+kubectl apply -f psqlClient.yaml
+kubectl exec psql-client -ti -- psql --host=$psql.postgres.database.azure.com --port=5432 --username=tomas@$psql --dbname=postgres
+SELECT * FROM mytable;
+INSERT INTO mytable VALUES ('This is my message from AKS');
+exit
+```
+
+Protect network connections by using private endpoint (you can also use service endpoint free of charge if no access from onprem and outbound access not neet to be force-routed without exceptions)
+
+```bash
+# Create Private Endpoint
+az network private-endpoint create \
+    -n plink-psql \
+    -g $rg \
+    --vnet-name mynet --subnet aks-subnet \
+    --private-connection-resource-id $(az postgres server show -g $rg -n $psql --query id -o tsv) \
+    --group-id postgresqlServer \
+    --connection-name plink-psql-connection  
+
+# Create DNS zone, link to VNET and zone group for PSQL
+az network private-dns zone create -g $rg -n "privatelink.postgres.database.azure.com"
+
+az network private-dns link vnet create \
+     -g $rg \
+    --zone-name "privatelink.postgres.database.azure.com" \
+    --name dns-plink-psql \
+    --virtual-network mynet \
+    --registration-enabled false
+
+az network private-endpoint dns-zone-group create \
+    -g $rg \
+    --endpoint-name plink-psql \
+    --name zonegroup-plink-psql \
+    --private-dns-zone "privatelink.postgres.database.azure.com" \
+    --zone-name psql
+
+# Disable any access except for Private Endpoint on PSQL
+az postgres server update --public Disabled -g $rg -n $psql
+
+# Connection from PC should fail
+psql --host=$psql.postgres.database.azure.com --port=5432 --username=tomas@$psql --dbname=postgres
+
+# Connection from AKS should be fine
+kubectl exec psql-client -ti -- psql --host=$psql.postgres.database.azure.com --port=5432 --username=tomas@$psql --dbname=postgres
+```
+
+Enhance authentication with AAD integration and managed identity
+
+```bash
+# Enable AAD integration and make myself admin
+az postgres server ad-admin create --server-name $psql \
+    -g $rg \
+    --display-name $(az account show --query user.name -o tsv) \
+    --object-id $(az ad user show --id $(az account show --query user.name -o tsv) --query objectId -o tsv)
+
+# Reenable public access
+az postgres server update --public Enabled -g $rg -n $psql
+
+# Get short-lived token to access database
+export PGPASSWORD=$(az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv)
+
+# Connect to PSQL using token
+psql --host=$psql.postgres.database.azure.com --port=5432 --username=tokubica@microsoft.com@$psql --dbname=postgres --set=sslmode=require
+
+# Create managed identity and assign to cluster
+az identity create -n psqlUser -g $rg
+
+az aks pod-identity add -g $rg \
+    --cluster-name aks \
+    --namespace default \
+    --name psql-user \
+    --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
+
+TO BE CONTINUED
+```
 
 ## Using Azure Disk
 

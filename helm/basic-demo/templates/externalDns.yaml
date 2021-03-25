@@ -54,10 +54,10 @@ spec:
         args:
         - --source=service
         - --source=ingress
-        - --domain-filter=private.demo
+        - --domain-filter={{ .Values.dnsZone }}
         - --provider=azure-private-dns
-        - --azure-resource-group=aks-imperative-rg
-        - --azure-subscription-id=a0f4a733-4fce-4d49-b8a8-d30541fc1b45
+        - --azure-resource-group={{ .Values.rg }}
+        - --azure-subscription-id={{ .Values.subscriptionId }}
         volumeMounts:
         - name: azure-config-file
           mountPath: /etc/kubernetes

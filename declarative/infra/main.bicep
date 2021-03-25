@@ -35,6 +35,7 @@ module aks './aks.bicep' = {
     appgwName: networking.outputs.appgwName
     logAnalyticsResourceId: monitoring.outputs.logAnalyticsResourceId
     sshKey: sshKey
+    dnsZoneName: networking.outputs.dnsZoneName
   }
 }
 

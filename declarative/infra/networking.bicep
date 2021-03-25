@@ -175,3 +175,4 @@ output intlbSubnetId string = '${vnet.id}/subnets/intlb-subnet'
 output jumpSubnetId string = '${vnet.id}/subnets/jump-subnet'
 output appgwId string = appGw.id
 output appgwName string = appGw.name
+output dnsZoneName string = privateDnsZone.name

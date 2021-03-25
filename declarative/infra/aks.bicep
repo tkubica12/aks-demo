@@ -5,10 +5,12 @@ param aksSubnetId string
 param appgwId string
 param appgwName string
 param logAnalyticsResourceId string
+param dnsZoneName string
 
 var location = resourceGroup().location
 var roleContributor = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
 var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
+var roleDnsContributor = 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
 
 // Identities and RBAC
 resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
@@ -51,6 +53,20 @@ resource aksIdentityRoleAppgw 'Microsoft.Authorization/roleAssignments@2020-04-0
 resource externalDnsIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: 'externalDns'
   location: location
+}
+
+resource dnsZoneExisting 'Microsoft.Network/privateDnsZones@2018-09-01' existing = {
+  name: dnsZoneName
+}
+
+resource externalDnsRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid('externalDnsRole', resourceGroup().id)
+  scope: dnsZoneExisting
+  properties: {
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleDnsContributor)
+    principalId: externalDnsIdentity.properties.principalId
+  }
 }
 
 // AKS cluster
@@ -139,18 +155,19 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
     }
     podIdentityProfile: {
       enabled: true
-      allowNetworkPluginKubenet: false
-      userAssignedIdentities: [
-        {
-          name: 'secrets-reader'
-          namespace: 'default'
-          identity: {
-            resourceId: externalDnsIdentity.id
-            clientId: externalDnsIdentity.properties.clientId
-            objectId: externalDnsIdentity.properties.principalId
-          }
-        }
-      ]
+    }
+    //   allowNetworkPluginKubenet: false
+    //   userAssignedIdentities: [
+    //     {
+    //       name: 'secrets-reader'
+    //       namespace: 'default'
+    //       identity: {
+    //         resourceId: externalDnsIdentity.id
+    //         clientId: externalDnsIdentity.properties.clientId
+    //         objectId: externalDnsIdentity.properties.principalId
+    //       }
+    //     }
+    //   ]
       // userAssignedIdentityExceptions: [
       //   {
       //     name: 'string'
@@ -158,7 +175,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
       //     podLabels: {}
       //   }
       // ]
-    }
+
   }
 }
 

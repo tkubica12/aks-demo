@@ -12,12 +12,25 @@ az deployment group create -g aks-demo --template-file infra/main.json --paramet
 az aks get-credentials -g aks-demo -n aks-demo --admin --overwrite
 ```
 
+## Add identities to cluster
+
+```bash
+export rg=aks-demo
+az aks update --enable-pod-identity -n aks-demo -g $rg
+az aks pod-identity add -g $rg \
+    --cluster-name aks-demo \
+    --namespace default \
+    --name external-dns \
+    --identity-resource-id $(az identity show -n externalDns -g $rg --query id -o tsv)
+```
+
 ## Connect cluster to GitOps
 ```bash
+export rg=aks-demo
 az k8s-configuration create -c aks-demo \
     --cluster-type managedClusters \
     -n common \
-    -g aks-demo \
+    -g $rg \
     --operator-type flux \
     --operator-params "'--git-readonly --git-path gitops/common'" \
     --repository-url https://github.com/tkubica12/aks-demo \

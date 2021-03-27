@@ -87,7 +87,7 @@ az deployment group create -g aks-demo --template-file infra/services.json --par
 
 ## Destroy
 ```bash
-eport kezvaulkv-5jl6tmwrp3lkm
+export keyvault=$(az deployment group show -n main -g aks-demo --query properties.outputs.keyvaultName.value -o tsv)
 az keyvault delete -g $rg -n $keyvault 
 az keyvault purge -n $keyvault 
 az group delete -n aks-demo -y --no-wait

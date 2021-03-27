@@ -45,8 +45,24 @@ resource privateDnsZone 'Microsoft.Network/privateDnsZones@2018-09-01' = {
   location: 'global'
 }
 
+resource plinkDnsPsql 'Microsoft.Network/privateDnsZones@2018-09-01' = {
+  name: 'privatelink.postgres.database.azure.com'
+  location: 'global'
+}
+
 resource virtualNetworkLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2018-09-01' = {
   name: '${privateDnsZone.name}/${privateDnsZone.name}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: true
+    virtualNetwork: {
+      id: vnet.id
+    }
+  }
+}
+
+resource virtualNetworkLinkPsql 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2018-09-01' = {
+  name: '${plinkDnsPsql.name}/${plinkDnsPsql.name}-link'
   location: 'global'
   properties: {
     registrationEnabled: true

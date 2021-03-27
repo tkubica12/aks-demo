@@ -1,4 +1,9 @@
+@secure()
+param password string
+
 param userObjectId string
+param userName string
+param localUser string
 
 var location = resourceGroup().location
 var roleKeyVaultAministrator = '00482a5a-887f-4fb3-b363-3b7fe8e74483'
@@ -40,5 +45,46 @@ resource kvSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
   }
 }
 
+// Azure Database for PostgreSQL
+resource psql 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
+  name: 'psql-${uniqueString(subscription().id)}'
+  location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
+  sku: {
+    name: 'GP_Gen5_2'
+    tier: 'GeneralPurpose'
+    capacity: 2
+    size: '102400'
+    family: 'Gen5'
+  }
+  properties: {
+    version: '11'
+    createMode: 'Default'
+    administratorLogin: localUser
+    administratorLoginPassword: password
+    publicNetworkAccess: 'Disabled'
+    storageProfile: {
+      backupRetentionDays: 35
+      geoRedundantBackup: 'Disabled'
+      storageMB: 102400
+      storageAutogrow: 'Enabled'
+    }
+  }
+}
+
+resource psqlAdmin 'Microsoft.DBforPostgreSQL/servers/administrators@2017-12-01' = {
+  name: '${psql.name}/ActiveDirectory'
+  properties:{
+    administratorType: 'ActiveDirectory'
+    login: userName
+    sid: userObjectId
+    tenantId: subscription().tenantId
+  }
+}
+
 output keyvaultName string = keyvault.name
 output keyvaultId string = keyvault.id
+output psqlId string = psql.id
+output psqlName string = psql.name

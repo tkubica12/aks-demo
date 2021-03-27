@@ -82,7 +82,11 @@ ssh $jumpip
 
 # Development - test only one module example
 az bicep build -f infra/services.bicep
-az deployment group create -g aks-demo --template-file infra/services.json --parameters userObjectId=$(az ad user show --id $(az account show --query user.name -o tsv) --query objectId -o tsv)
+az deployment group create -g aks-demo --template-file infra/services.json \
+    --parameters userObjectId=$(az ad user show --id $(az account show --query user.name -o tsv) --query objectId -o tsv) \
+    --parameters userName=$(az account show --query user.name -o tsv) \
+    --parameters localUser=tomas \
+    --parameters password=Azure12345678
 
 
 ## Destroy

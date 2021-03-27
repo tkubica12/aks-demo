@@ -2,6 +2,7 @@
 param sshKey string
 
 param userObjectId string
+param userName string
 
 var location = resourceGroup().location
 var roleContributor = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
@@ -53,6 +54,9 @@ module services './services.bicep' = {
   name: 'services'
   params:{
     userObjectId: userObjectId
+    userName: userName
+    localUser: 'tomas'
+    password: 'Azure12345678'
   }
 }
 

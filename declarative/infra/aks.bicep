@@ -6,11 +6,15 @@ param appgwId string
 param appgwName string
 param logAnalyticsResourceId string
 param dnsZoneName string
+param keyvaultName string
+param userObjectId string
 
 var location = resourceGroup().location
 var roleContributor = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
 var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 var roleDnsContributor = 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
+var roleKeyVaultSecretsUser = '4633458b-17de-408a-b874-0445c86b69e6'
+var roleAksClusterAdmin = 'b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b'
 
 // Identities and RBAC
 resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
@@ -18,8 +22,10 @@ resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-3
   location: location
 }
 
-resource aksIdentityRoleCluster 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid('aksIdentityRoleCluster', resourceGroup().id)
+
+resource aksIdentityRoleAcr 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid('aksIdentityRoleAcr', resourceGroup().id)
+  scope: aks
   properties: {
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleContributor)
@@ -27,14 +33,24 @@ resource aksIdentityRoleCluster 'Microsoft.Authorization/roleAssignments@2020-04
   }
 }
 
-resource aksIdentityRoleAcr 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid('aksIdentityRoleAcr', resourceGroup().id)
+resource aksIdentityRoleCluster 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid('aksIdentityRoleCluster', resourceGroup().id)
   properties: {
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAcrPull)
-    principalId: aks.properties.identityProfile.kubeletidentity.objectId
+    principalType: 'User'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAksClusterAdmin)
+    principalId: userObjectId
   }
 }
+
+resource userRoleAksClusterAdmin 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid('userRoleAksClusterAdmin', resourceGroup().id)
+  properties: {
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleContributor)
+    principalId: aksIdentity.properties.principalId
+  }
+}
+
 
 resource appGwExisting 'Microsoft.Network/applicationGateways@2020-05-01' existing = {
   name: 'appgw'
@@ -66,6 +82,25 @@ resource externalDnsRole 'Microsoft.Authorization/roleAssignments@2020-04-01-pre
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleDnsContributor)
     principalId: externalDnsIdentity.properties.principalId
+  }
+}
+
+resource keyvaultIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: 'secretsReader'
+  location: location
+}
+
+resource keyvaultExisting 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
+  name: keyvaultName
+}
+
+resource keyvaultSecretsRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid('keyvaultSecretsRole', resourceGroup().id)
+  scope: keyvaultExisting
+  properties: {
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleKeyVaultSecretsUser)
+    principalId: keyvaultIdentity.properties.principalId
   }
 }
 
@@ -153,28 +188,28 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
         }
     }
     }
-    podIdentityProfile: {
-      enabled: true
-    }
+    // podIdentityProfile: {
+    //   enabled: true
     //   allowNetworkPluginKubenet: false
     //   userAssignedIdentities: [
-    //     {
-    //       name: 'secrets-reader'
-    //       namespace: 'default'
-    //       identity: {
-    //         resourceId: externalDnsIdentity.id
-    //         clientId: externalDnsIdentity.properties.clientId
-    //         objectId: externalDnsIdentity.properties.principalId
-    //       }
-    //     }
-    //   ]
-      // userAssignedIdentityExceptions: [
-      //   {
-      //     name: 'string'
-      //     namespace: 'string'
-      //     podLabels: {}
-      //   }
-      // ]
+      //     {
+        //       name: 'secrets-reader'
+        //       namespace: 'default'
+        //       identity: {
+          //         resourceId: externalDnsIdentity.id
+          //         clientId: externalDnsIdentity.properties.clientId
+          //         objectId: externalDnsIdentity.properties.principalId
+          //       }
+          //     }
+          //   ]
+          // userAssignedIdentityExceptions: [
+            //   {
+              //     name: 'string'
+              //     namespace: 'string'
+              //     podLabels: {}
+              //   }
+              // ]
+              // }
 
   }
 }

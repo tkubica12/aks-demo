@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keyvault-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: keyvault-client
+  template:
+    metadata:
+      labels:
+        app: keyvault-client
+        aadpodidbinding: secrets-reader
+    spec:
+      containers:
+      - name: keyvault-client
+        image: tkubica/mybox
+        volumeMounts:
+          - name: secrets-store-inline
+            mountPath: "/mnt/secrets-store"
+            readOnly: true
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: azure-keyvault

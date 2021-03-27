@@ -581,5 +581,10 @@ kubectl apply -f pvcShareDemo.yaml
 # Destroy environment
 
 ```bash
+az role assignment create --role "Key Vault Administrator" \
+    --assignee $(az account show --query user.name -o tsv)  \
+    --scope $(az keyvault show -g $rg -n $keyvault --query id -o tsv)
+az keyvault delete -g $rg -n $keyvault 
+az keyvault purge -n $keyvault 
 az group delete -n $rg -y --no-wait
 ```

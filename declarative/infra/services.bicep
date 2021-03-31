@@ -76,6 +76,11 @@ resource psql 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
   }
 }
 
+resource psqlIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: 'psqlUser'
+  location: location
+}
+
 resource psqlAdmin 'Microsoft.DBforPostgreSQL/servers/administrators@2017-12-01' = {
   name: '${psql.name}/ActiveDirectory'
   properties:{
@@ -125,3 +130,6 @@ output keyvaultName string = keyvault.name
 output keyvaultId string = keyvault.id
 output psqlId string = psql.id
 output psqlName string = psql.name
+output psqlHost string = psql.properties.fullyQualifiedDomainName
+output psqlUsername string = '${localUser}@${psql.name}'
+output psqlIdentityClientId string = psqlIdentity.properties.clientId

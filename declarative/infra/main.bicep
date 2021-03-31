@@ -66,4 +66,5 @@ module services './services.bicep' = {
 }
 
 output keyvaultName string = services.outputs.keyvaultName
-
+output psqlHost string = services.outputs.psqlHost
+output psqlUsername string = services.outputs.psqlUsername

@@ -1,7 +1,6 @@
 # Demo
 
-## Managed identity
-Access Key Vault using managed identity
+## Access Key Vault using managed identity
 
 ```bash
 export pod=$(kubectl get pod -l app=keyvault-client -o=jsonpath='{.items[0].metadata.name}')
@@ -12,12 +11,51 @@ kubectl exec $pod -it -- bash
     exit
 ```
 
-Access PostgreSQL using managed identity
+## Access PostgreSQL using managed identity and private link
+
 ```bash
+export pod=$(kubectl get pod -l app=psql-client -o=jsonpath='{.items[0].metadata.name}')
+export psqlhost=$(az deployment group show -n services -g aks-demo --query properties.outputs.psqlHost.value -o tsv)
+export psqlname=$(az deployment group show -n services -g aks-demo --query properties.outputs.psqlName.value -o tsv)
+export psqlusername=$(az account show --query user.name -o tsv)@$psqlname
+export psqlidentity=$(az deployment group show -n services -g aks-demo --query properties.outputs.psqlIdentityClientId.value -o tsv)
+
+
+# Connect as AAD admin user, create tables and configure new user authenticated by managed identity
+kubectl exec $pod -- sh -c "echo $psqlhost > psqlhost"
+kubectl exec $pod -- sh -c "echo $psqlusername > psqlusername"
+kubectl exec $pod -- sh -c "echo $psqlname > psqlname"
+kubectl exec $pod -- sh -c "echo $(az account get-access-token --resource-type oss-rdbms --query accessToken -o tsv) > token"
+echo $psqlidentity    # copy client identity to clipboard
+kubectl exec $pod -it -- sh 
+    export PGPASSWORD=$(cat token)
+    psql --host=$(cat psqlhost) --port=5432 --username=$(cat psqlusername) --dbname=postgres
+    CREATE TABLE IF NOT EXISTS mytable (
+        message VARCHAR ( 100 )
+    );
+    INSERT INTO mytable VALUES ('This is my message');
+    SELECT * FROM mytable;
+
+    SET aad_validate_oids_in_tenant = off;
+    CREATE ROLE myuser WITH LOGIN PASSWORD '<identityClientId>' IN ROLE azure_ad_user;
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO myuser;
+
+    exit
+    exit
+
+# Connect using Managed Identity
+kubectl exec $pod -ti -- sh
+    apk add curl
+    apk add jq
+    export PGPASSWORD=`curl -s 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https%3A%2F%2Fossrdbms-aad.database.windows.net' -H Metadata:true | jq -r .access_token`
+    psql --host=$(cat psqlhost) --port=5432 --username=myuser@$(cat psqlname) --dbname=postgres
+    SELECT * FROM mytable;
+    INSERT INTO mytable VALUES ('Not permitted to do so');
+    exit
+    exit
 ```
 
-## Key Vault integration
-Use SecretProviderClass to access Key Vault secret
+## Use SecretProviderClass to access Key Vault secret
 
 ```bash
 export pod=$(kubectl get pod -l app=keyvault-client -o=jsonpath='{.items[0].metadata.name}')
@@ -58,6 +96,11 @@ az aks pod-identity add -g $rg \
     --namespace default \
     --name secrets-reader \
     --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
+az aks pod-identity add -g $rg \
+    --cluster-name aks-demo \
+    --namespace default \
+    --name psql-user \
+    --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
 ```
 
 ## Connect cluster to GitOps
@@ -88,7 +131,8 @@ az deployment group create -g aks-demo --template-file infra/services.json \
     --parameters userName=$(az account show --query user.name -o tsv) \
     --parameters localUser=tomas \
     --parameters password=Azure12345678 \
-    --parameters subnetId=$(az network vnet subnet show -n aks-subnet -g aks-demo --vnet-name aks-demo-net --query id -o tsv)
+    --parameters subnetId=$(az network vnet subnet show -n aks-subnet -g aks-demo --vnet-name aks-demo-net --query id -o tsv) \
+    --parameters privateDnsPsqlId=/subscriptions/a0f4a733-4fce-4d49-b8a8-d30541fc1b45/resourceGroups/aks-demo/providers/Microsoft.Network/privateDnsZones/privatelink.postgres.database.azure.com
 
 
 ## Destroy

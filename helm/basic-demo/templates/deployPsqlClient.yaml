@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: psql-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: psql-client
+  template:
+    metadata:
+      labels:
+        app: psql-client
+        aadpodidbinding: psql-user
+    spec:
+      containers:
+      - name: psql-client
+        image: governmentpaas/psql
+        command:
+          - "tail"
+          - "-f"
+          - "/dev/null"

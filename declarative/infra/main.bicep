@@ -52,11 +52,16 @@ module monitoring './monitoring.bicep' = {
 // Services
 module services './services.bicep' = {
   name: 'services'
+  dependsOn: [
+    networking
+  ]
   params:{
     userObjectId: userObjectId
     userName: userName
     localUser: 'tomas'
     password: 'Azure12345678'
+    subnetId: networking.outputs.aksSubnetId
+    privateDnsPsqlId: networking.outputs.privateDnsPsqlId
   }
 }
 

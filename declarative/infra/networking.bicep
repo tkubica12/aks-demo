@@ -34,6 +34,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2020-06-01' = {
         name: 'aks-subnet'
         properties: {
           addressPrefix: '10.0.128.0/22'
+          privateEndpointNetworkPolicies: 'Disabled'
         }
       }
     ]
@@ -65,7 +66,7 @@ resource virtualNetworkLinkPsql 'Microsoft.Network/privateDnsZones/virtualNetwor
   name: '${plinkDnsPsql.name}/${plinkDnsPsql.name}-link'
   location: 'global'
   properties: {
-    registrationEnabled: true
+    registrationEnabled: false
     virtualNetwork: {
       id: vnet.id
     }
@@ -192,3 +193,4 @@ output jumpSubnetId string = '${vnet.id}/subnets/jump-subnet'
 output appgwId string = appGw.id
 output appgwName string = appGw.name
 output dnsZoneName string = privateDnsZone.name
+output privateDnsPsqlId string = plinkDnsPsql.id

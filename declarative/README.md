@@ -37,7 +37,8 @@ az bicep build -f infra/main.bicep
 az group create -n aks-demo -l westeurope
 az deployment group create -g aks-demo --template-file infra/main.json \
     --parameters sshKey=@~/.ssh/id_rsa.pub \
-    --parameters userObjectId=$(az ad user show --id $(az account show --query user.name -o tsv) --query objectId -o tsv)
+    --parameters userObjectId=$(az ad user show --id $(az account show --query user.name -o tsv) --query objectId -o tsv) \
+    --parameters userName=$(az account show --query user.name -o tsv)
 
 az aks get-credentials -g aks-demo -n aks-demo --admin --overwrite
 ```
@@ -86,7 +87,8 @@ az deployment group create -g aks-demo --template-file infra/services.json \
     --parameters userObjectId=$(az ad user show --id $(az account show --query user.name -o tsv) --query objectId -o tsv) \
     --parameters userName=$(az account show --query user.name -o tsv) \
     --parameters localUser=tomas \
-    --parameters password=Azure12345678
+    --parameters password=Azure12345678 \
+    --parameters subnetId=$(az network vnet subnet show -n aks-subnet -g aks-demo --vnet-name aks-demo-net --query id -o tsv)
 
 
 ## Destroy

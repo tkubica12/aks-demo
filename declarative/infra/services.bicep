@@ -4,6 +4,8 @@ param password string
 param userObjectId string
 param userName string
 param localUser string
+param subnetId string
+param privateDnsPsqlId string
 
 var location = resourceGroup().location
 var roleKeyVaultAministrator = '00482a5a-887f-4fb3-b363-3b7fe8e74483'
@@ -81,6 +83,41 @@ resource psqlAdmin 'Microsoft.DBforPostgreSQL/servers/administrators@2017-12-01'
     login: userName
     sid: userObjectId
     tenantId: subscription().tenantId
+  }
+}
+
+resource plinkPsql 'Microsoft.Network/privateEndpoints@2020-08-01' = {
+  name: 'plink-psql'
+  location: location
+  properties:{
+    subnet:{
+      id: subnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: 'plink-psql'
+        properties:{
+          privateLinkServiceId: psql.id
+          groupIds: [
+            'postgresqlServer'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource plinkPsqlDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2020-08-01' = {
+  name: '${plinkPsql.name}/default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'plinkPsqlDns'
+        properties: {
+          privateDnsZoneId: privateDnsPsqlId
+        }
+      }
+    ]
   }
 }
 

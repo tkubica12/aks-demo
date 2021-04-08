@@ -5,7 +5,7 @@ metadata:
 spec:
   chart:
     repository: https://dapr.github.io/helm-charts
-    name: dapr/dapr
+    name: dapr
     version: 1.1.1
   values:
     installCRDs: true

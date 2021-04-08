@@ -1,0 +1,14 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: opentelemetry
+spec:
+  chart:
+    git: https://github.com/tkubica12/aks-demo
+    ref: master
+    path: helm/opentelemetry
+  values:
+    repository: tkubica/opentelemetry:1
+    tfgenRepository: tkubica/opentelemetry-tfgen:1
+    javaRepository: tkubica/java-autoinstrument:1
+    mysql_password: Azure12345678

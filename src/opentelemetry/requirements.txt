@@ -1,0 +1,11 @@
+flask
+requests
+pymysql == 0.10.1
+opentelemetry-sdk == 1.0.0
+# opentelemetry-util-http  == 0.18b0
+opentelemetry-instrumentation-flask == 0.19b0
+opentelemetry-instrumentation-requests == 0.19b0
+# opentelemetry-instrumentation-prometheus == 1.0.0
+# opentelemetry-ext-wsgi
+opentelemetry-instrumentation-pymysql == 0.19b0
+azure-monitor-opentelemetry-exporter == 1.0.0b4

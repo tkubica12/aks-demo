@@ -16,9 +16,6 @@ module networking './networking.bicep' = {
 // Jump VM
 module jump './jump.bicep' = {
   name: 'jump'
-  dependsOn:[
-    networking
-  ]
   params: {
     sshKey: sshKey
     jumpSubnetId: networking.outputs.jumpSubnetId
@@ -28,15 +25,11 @@ module jump './jump.bicep' = {
 // AKS
 module aks './aks.bicep' = {
   name: 'aks'
-  dependsOn:[
-    networking
-    monitoring
-  ]
   params:{
     aksSubnetId: networking.outputs.aksSubnetId
     appgwId: networking.outputs.appgwId
     appgwName: networking.outputs.appgwName
-    logAnalyticsResourceId: monitoring.outputs.logAnalyticsResourceId
+    logAnalyticsResourceId: services.outputs.logAnalyticsResourceId
     sshKey: sshKey
     dnsZoneName: networking.outputs.dnsZoneName
     keyvaultName: services.outputs.keyvaultName
@@ -44,17 +37,9 @@ module aks './aks.bicep' = {
   }
 }
 
-// Monitoring
-module monitoring './monitoring.bicep' = {
-  name: 'monitoring'
-}
-
 // Services
 module services './services.bicep' = {
   name: 'services'
-  dependsOn: [
-    networking
-  ]
   params:{
     userObjectId: userObjectId
     userName: userName
@@ -66,5 +51,3 @@ module services './services.bicep' = {
 }
 
 output keyvaultName string = services.outputs.keyvaultName
-output psqlHost string = services.outputs.psqlHost
-output psqlUsername string = services.outputs.psqlUsername

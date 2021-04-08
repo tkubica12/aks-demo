@@ -1,0 +1,4 @@
+opentelemetry-sdk == 1.0.0
+# opentelemetry-ext-wsgi == 0.7b1
+azure-monitor-opentelemetry-exporter == 1.0.0b4
+opentelemetry-instrumentation-requests == 0.19b0

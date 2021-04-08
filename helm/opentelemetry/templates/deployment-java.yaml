@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-app
+  labels:
+    app: java-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: java-app
+  template:
+    metadata:
+      labels:
+        app: java-app
+        aadpodidbinding: secrets-reader
+    spec:
+      containers:
+        - name: java-app
+          image: "{{ .Values.javaRepository }}"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: APPLICATIONINSIGHTS_CONNECTION_STRING_PATH
+              value: "/mnt/secrets-store/appinsights-string"
+          resources:
+            requests:
+                cpu: 10m
+                memory: 128M
+            limits:
+                cpu: 2
+                memory: 512M
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+      - name: secrets-store-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: azure-keyvault

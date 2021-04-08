@@ -34,14 +34,17 @@ Implemented features
 - AKS deployment
 - AAD integration
 - Managed Ingress controller
-
-
+- External DNS
+- Pod identity
+- Secrets management with Azure Key Vault and CSI
+- Using Azure Database for PostgreSQL with Private Link, AAD integration and Pod identity
+- Distributed Tracing with Application Insights, OpenTelemetry
+  
 # Backlog of features
 - Open Service Mesh
 - Canary and A/B testing with Flagger
 - Scaling with KEDA
 - Azure Arc for Kubernetes (hybrid solution)
-- Distributed Tracing with Application Insights, OpenTelemetry
 - Azure Monitor for Containers - monitoring and telemetry
 - Scrapping Prometheus metrics using Azure Monitor
 - Grafana dashboard on top of Azure Monitor

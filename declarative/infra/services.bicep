@@ -126,6 +126,51 @@ resource plinkPsqlDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2
   }
 }
 
+// Monitoring
+resource logs 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
+  name: uniqueString(subscription().id)
+  location: location
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+  }
+}
+
+resource appinsights 'Microsoft.Insights/components@2020-02-02-preview' = {
+  name: uniqueString(subscription().id)
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    Flow_Type: 'Bluefield'
+    Request_Source: 'rest'
+    WorkspaceResourceId: logs.id
+  }
+}
+
+resource kvAppInsightsSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/appinsights'
+  dependsOn: [
+    kvIdentityUser
+  ]
+  properties: {
+    value: appinsights.properties.InstrumentationKey
+  }
+}
+
+resource kvAppInsightsStringSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/appinsights-string'
+  dependsOn: [
+    kvIdentityUser
+  ]
+  properties: {
+    value: appinsights.properties.ConnectionString
+  }
+}
+
+output logAnalyticsWorkspaceId string = logs.properties.customerId
+output logAnalyticsResourceId string = logs.id
 output keyvaultName string = keyvault.name
 output keyvaultId string = keyvault.id
 output psqlId string = psql.id

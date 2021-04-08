@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opentelemetry-tfgen
+  labels:
+    app: opentelemetry-tfgen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opentelemetry-tfgen
+  template:
+    metadata:
+      labels:
+        app: opentelemetry-tfgen
+        aadpodidbinding: secrets-reader
+    spec:
+      containers:
+        - name: opentelemetry-tfgen
+          image: "{{ .Values.tfgenRepository }}"
+          env:
+            - name: APP_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: "metadata.labels['app']"
+            - name: APPINSIGHTS_INSTRUMENTATIONKEY_PATH
+              value: "/mnt/secrets-store/appinsights"
+            - name: REMOTE_ENDPOINT1
+              value: "http://opentelemetry-app1:8080"
+            - name: REMOTE_ENDPOINT2
+              value: "http://opentelemetry-app2:8080"
+            - name: REMOTE_ENDPOINT3
+              value: "http://java-app:8080/greeting?name=Tomas"
+          resources:
+            requests:
+                cpu: 10m
+                memory: 16M
+            limits:
+                cpu: 100M
+                memory: 128M
+          volumeMounts:
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+      - name: secrets-store-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: azure-keyvault
+       

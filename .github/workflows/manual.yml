@@ -1,0 +1,31 @@
+name: Deploy AKS demo
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  workflow_dispatch:
+    # Inputs the workflow accepts.
+    # inputs:
+      # name:
+        # Friendly description to be shown in the UI instead of 'name'
+        # description: 'Person to greet'
+        # Default value if no value is explicitly provided
+        # default: 'World'
+        # Input has to be provided for the workflow to run
+        # required: true
+jobs:
+  deployAksDemo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+ 
+      - name: Install Bicep CLI
+        run: | 
+          curl -Lo bicepinstall https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x ./bicepinstall
+          sudo mv ./bicepinstall /usr/local/bin/bicep
+          bicep -v
+       
+      - name: Build Bicep template
+        run:    bicep build ./declarative/inra/main.bicep

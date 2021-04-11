@@ -166,6 +166,9 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
       'azurepolicy': {
         enabled: true
       }
+      'openServiceMesh': {
+        enabled: true
+      }
       'gitops': {
         enabled: true
       }

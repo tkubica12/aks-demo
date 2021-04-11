@@ -40,7 +40,7 @@ jobs:
         with:
           inlineScript: |
             #!/bin/bash
-            if $(az group exists -n aks-demo ; then
+            if $(az group exists -n aks-demo) ; then
               echo "Azure resource group already exists, skipping creation..."
             else
               az group create -n aks-demo --location westeurope

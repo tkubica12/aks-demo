@@ -1,0 +1,24 @@
+name: Destroy AKS demo
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deployAksDemo:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Destroy demo
+        uses: Azure/CLI@v1
+        with:
+          inlineScript: |
+            export keyvault=$(az deployment group show -n main -g aks-demo --query properties.outputs.keyvaultName.value -o tsv)
+            az keyvault delete -g $rg -n $keyvault 
+            az keyvault purge -n $keyvault 
+            az group delete -n aks-demo -y

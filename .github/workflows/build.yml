@@ -53,3 +53,27 @@ jobs:
           resourceGroupName: aks-demo
           template: ./declarative/infra/main.json
           parameters: sshKey="${{ secrets.SSH_PUBLIC_KEY }}" userObjectId=${{ secrets.USER_OBJECT_ID }} userName=${{ secrets.USER_NAME }}
+
+      - name: Deploy Pod identity
+        uses: Azure/CLI@v1
+        with:
+          inlineScript: |
+            #!/bin/bash
+            export rg=aks-demo
+            az aks get-credentials -g $rg -n aks-demo --admin --overwrite
+            az aks update --enable-pod-identity -n aks-demo -g $rg
+            az aks pod-identity add -g $rg \
+                --cluster-name aks-demo \
+                --namespace default \
+                --name external-dns \
+                --identity-resource-id $(az identity show -n externalDns -g $rg --query id -o tsv)
+            az aks pod-identity add -g $rg \
+                --cluster-name aks-demo \
+                --namespace default \
+                --name secrets-reader \
+                --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
+            az aks pod-identity add -g $rg \
+                --cluster-name aks-demo \
+                --namespace default \
+                --name psql-user \
+                --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)

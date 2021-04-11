@@ -29,3 +29,20 @@ jobs:
        
       - name: Build Bicep template
         run:    bicep build ./declarative/infra/main.bicep
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure Resource Group exists
+        uses: Azure/CLI@v1
+        with:
+          inlineScript: |
+            #!/bin/bash
+            if $(az group exists -n aks-demo ; then
+              echo "Azure resource group already exists, skipping creation..."
+            else
+              az group create -n aks-demo --location westeurope
+              echo "Azure resource group created"
+            fi

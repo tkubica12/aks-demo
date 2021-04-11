@@ -46,3 +46,10 @@ jobs:
               az group create -n aks-demo --location westeurope
               echo "Azure resource group created"
             fi
+
+      - name: Deploy infrastructure
+        uses: azure/arm-deploy@v1
+        with:
+          resourceGroupName: aks-demo
+          template: ./declarative/infra/main.json
+          parameters: sshKey=${{ secrets.SSH_PUBLIC_KEY }} userObjectId=${{ secrets.USER_OBJECT_ID }} userName=${{ secrets.USER_NAME }}

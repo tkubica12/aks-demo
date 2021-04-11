@@ -28,4 +28,4 @@ jobs:
           bicep -v
        
       - name: Build Bicep template
-        run:    bicep build ./declarative/inra/main.bicep
+        run:    bicep build ./declarative/infra/main.bicep

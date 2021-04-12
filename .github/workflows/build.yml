@@ -85,5 +85,21 @@ jobs:
           cluster-name: aks-demo
           resource-group: aks-demo
 
-            
+      - name: Onboard cluster to GitOps
+        uses: Azure/CLI@v1
+        with:
+          inlineScript: |
+            #!/bin/bash
+            az extension add --name k8s-configuration -y
+            az k8s-configuration create -c aks-demo \
+              --cluster-type managedClusters \
+              -n common \
+              -g aks-demo \
+              --operator-type flux \
+              --operator-params "'--git-readonly --git-path gitops/common'" \
+              --repository-url https://github.com/tkubica12/aks-demo \
+              --enable-helm-operator \
+              --helm-operator-params '--set helm.versions=v3' \
+              --scope cluster
+
       

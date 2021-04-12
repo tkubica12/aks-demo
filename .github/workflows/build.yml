@@ -60,7 +60,7 @@ jobs:
           inlineScript: |
             #!/bin/bash
             export rg=aks-demo
-            az aks get-credentials -g $rg -n aks-demo --admin --overwrite
+            az extension add -n aks-preview -y
             az aks update --enable-pod-identity -n aks-demo -g $rg
             az aks pod-identity add -g $rg \
                 --cluster-name aks-demo \
@@ -77,3 +77,13 @@ jobs:
                 --namespace default \
                 --name psql-user \
                 --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
+
+      - name: Get AKS credentials
+        uses: Azure/aks-set-context@v1
+        with:
+          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+          cluster-name: aks-demo
+          resource-group: aks-demo
+
+            
+      

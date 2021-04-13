@@ -6,6 +6,10 @@ param userName string
 param localUser string
 param subnetId string
 param privateDnsPsqlId string
+param twitterConsumerKey string
+param twitterConsumerSecret string
+param twitterAccessToken string
+param twitterAccessSecret string
 
 var location = resourceGroup().location
 var roleKeyVaultAministrator = '00482a5a-887f-4fb3-b363-3b7fe8e74483'
@@ -327,6 +331,45 @@ resource kvSbKey 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
   ]
   properties: {
     value: listkeys(sbDaprKey.id, '2017-04-01').primaryKey
+  }
+}
+
+// Twitter secrets
+resource kvTwitterConsumerKey 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/twitterConsumerKey'
+  dependsOn: [
+    kvIdentityUser
+  ]
+  properties: {
+    value: twitterConsumerKey
+  }
+}
+resource kvTwitterConsumerSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/twitterConsumerSecret'
+  dependsOn: [
+    kvIdentityUser
+  ]
+  properties: {
+    value: twitterConsumerSecret
+  }
+}
+
+resource kvTwitterAccessToken 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/twitterAccessToken'
+  dependsOn: [
+    kvIdentityUser
+  ]
+  properties: {
+    value: twitterAccessToken
+  }
+}
+resource kvTwitterAccessSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/twitterAccessSecret'
+  dependsOn: [
+    kvIdentityUser
+  ]
+  properties: {
+    value: twitterAccessSecret
   }
 }
 

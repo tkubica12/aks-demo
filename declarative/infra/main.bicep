@@ -4,6 +4,11 @@ param sshKey string
 param userObjectId string
 param userName string
 
+param twitterConsumerKey string
+param twitterConsumerSecret string
+param twitterAccessToken string
+param twitterAccessSecret string
+
 var location = resourceGroup().location
 var roleContributor = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
 var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
@@ -47,6 +52,10 @@ module services './services.bicep' = {
     password: 'Azure12345678'
     subnetId: networking.outputs.aksSubnetId
     privateDnsPsqlId: networking.outputs.privateDnsPsqlId
+    twitterConsumerKey: twitterConsumerKey
+    twitterConsumerSecret: twitterConsumerSecret
+    twitterAccessToken: twitterAccessToken
+    twitterAccessSecret: twitterAccessSecret
   }
 }
 

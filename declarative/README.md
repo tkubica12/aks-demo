@@ -1,4 +1,5 @@
 # Demo
+To provision declarative demo use GitHub Actions. You can also run Actions to destroy environment.
 
 ## Access Key Vault using managed identity
 

@@ -279,6 +279,16 @@ resource kvStorageKey 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
   }
 }
 
+resource kvStorageAccount 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/storage-account'
+  dependsOn: [
+    kvIdentityUser
+  ]
+  properties: {
+    value: storage.name
+  }
+}
+
 // Cognitive services
 resource cs 'Microsoft.CognitiveServices/accounts@2017-04-18' = {
   name: uniqueString(subscription().id)
@@ -299,6 +309,16 @@ resource kvCsKey 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
   ]
   properties: {
     value: listkeys(cs.id, '2017-04-18').key1
+  }
+}
+
+resource kvCsEndpoint 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/cs-endpoint'
+  dependsOn: [
+    kvIdentityUser
+  ]
+  properties: {
+    value: cs.properties.endpoint
   }
 }
 
@@ -324,13 +344,13 @@ resource sbDaprKey 'Microsoft.ServiceBus/namespaces/AuthorizationRules@2017-04-0
   }
 }
 
-resource kvSbKey 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
-  name: '${keyvault.name}/dapr-sb-key'
+resource kvSbString 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/dapr-sb-string'
   dependsOn: [
     kvIdentityUser
   ]
   properties: {
-    value: listkeys(sbDaprKey.id, '2017-04-01').primaryKey
+    value: listkeys(sbDaprKey.id, '2017-04-01').primaryConnectionString
   }
 }
 

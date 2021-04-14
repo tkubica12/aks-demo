@@ -1,0 +1,22 @@
+demoName: "twitterSentimentProcessor"
+
+dapr:
+   port: 3500
+
+processor:
+   port: 3002
+   image: "tkubica/twitter-processor:1"
+
+provider:
+   port: 3001
+   image: "tkubica/twitter-provider:1"
+
+viewer:
+   port: 8083
+   externalPort: 80
+   image: "tkubica/twitter-viewer:1"
+
+zipkin:
+   externalPort: 80
+
+query: Microsoft

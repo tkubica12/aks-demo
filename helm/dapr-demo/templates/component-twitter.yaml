@@ -1,0 +1,28 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: tweets
+spec:
+  type: bindings.twitter
+  version: v1
+  metadata:
+  - name: consumerKey
+    secretKeyRef:
+      name: twitterConsumerKey
+      key: twitterConsumerKey
+  - name: consumerSecret
+    secretKeyRef:
+      name: twitterConsumerSecret
+      key: twitterConsumerSecret
+  - name: accessToken
+    secretKeyRef:
+      name: twitterAccessToken
+      key: twitterAccessToken
+  - name: accessSecret
+    secretKeyRef:
+      name: twitterAccessSecret
+      key: twitterAccessSecret
+  - name: query
+    value: {{ .Values.query }}
+auth:
+    secretStore: azurekeyvault

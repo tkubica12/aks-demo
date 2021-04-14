@@ -1,0 +1,14 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: tweet-pubsub
+spec:
+  type: pubsub.azure.servicebus
+  version: v1
+  metadata:
+  - name: connectionString
+    secretKeyRef:
+      name: dapr-sb-string
+      key: dapr-sb-string
+auth:
+    secretStore: azurekeyvault

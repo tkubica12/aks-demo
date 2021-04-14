@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: viewer
+  labels:
+    app: viewer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: viewer
+  template:
+    metadata:
+      labels:
+        app: viewer
+        aadpodidbinding: secrets-reader
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "viewer"
+        dapr.io/app-port: "8083"
+        dapr.io/log-as-json: "true"
+        # dapr.io/config: "tracing"
+    spec:
+      containers:
+      - name: viewer
+        image: {{ .Values.viewerimage }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8083
+        env:
+        - name: APP_PORT
+          value: "8083"
+        - name: DAPR_HTTP_PORT
+          value: "3500"
+        - name: PUBSUB_NAME
+          value: tweet-pubsub
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: viewer
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8083
+  selector:
+    app: viewer
+  type: LoadBalancer

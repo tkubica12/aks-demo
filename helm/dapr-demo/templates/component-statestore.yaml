@@ -1,0 +1,20 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: tweet-store
+spec:
+  type: state.azure.tablestorage
+  version: v1
+  metadata:
+  - name: accountName
+    secretKeyRef:
+      name: storage-account
+      key: storage-account
+  - name: accountKey
+    secretKeyRef:
+      name: storage-key
+      key: storage-key
+  - name: tableName
+    value: DemoScoredTweets
+auth:
+    secretStore: azurekeyvault

@@ -19,7 +19,7 @@ spec:
         dapr.io/app-id: "viewer"
         dapr.io/app-port: "8083"
         dapr.io/log-as-json: "true"
-        # dapr.io/config: "tracing"
+        dapr.io/config: "tracing"
     spec:
       containers:
       - name: viewer

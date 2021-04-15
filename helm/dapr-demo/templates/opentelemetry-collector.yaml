@@ -21,7 +21,7 @@ data:
         loglevel: debug
       azuremonitor:
         endpoint: "https://dc.services.visualstudio.com/v2/track"
-        instrumentation_key: "{{ .Values.appInsightsKey }}"
+        instrumentation_key: "${APP_INSIGHTS_KEY}"
         # maxbatchsize is the maximum number of items that can be
         # queued before calling to the configured endpoint
         maxbatchsize: 100
@@ -68,6 +68,7 @@ spec:
       labels:
         app: opentelemetry
         component: otel-collector
+        aadpodidbinding: secrets-reader
     spec:
       containers:
       - name: otel-collector
@@ -84,9 +85,18 @@ spec:
             memory: 400Mi
         ports:
           - containerPort: 9411 # Default endpoint for Zipkin receiver.
+        env:
+          - name: APP_INSIGHTS_KEY
+            valueFrom:
+                secretKeyRef:
+                  name: dapr-secrets
+                  key: dapr-appinsights
         volumeMounts:
           - name: otel-collector-config-vol
             mountPath: /conf
+          - name: secrets-store-inline
+            mountPath: "/mnt/secrets-store"
+            readOnly: true
         livenessProbe:
           httpGet:
             path: /
@@ -102,3 +112,9 @@ spec:
               - key: otel-collector-config
                 path: otel-collector-config.yaml
           name: otel-collector-config-vol
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: dapr-secrets-keyvault

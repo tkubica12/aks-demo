@@ -20,7 +20,7 @@ spec:
         dapr.io/app-port: "3002"
         dapr.io/log-as-json: "true"
         dapr.io/app-protocol: grpc
-        # dapr.io/config: "tracing"
+        dapr.io/config: "tracing"
     spec:
       containers:
       - name: processor

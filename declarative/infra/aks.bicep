@@ -15,7 +15,7 @@ var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 var roleDnsContributor = 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
 var roleKeyVaultSecretsUser = '4633458b-17de-408a-b874-0445c86b69e6'
 var roleAksClusterAdmin = 'b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b'
-var vmSize = 'Standard_D2ds_v4'
+var vmSize = 'Standard_D4ds_v4'
 
 // Identities and RBAC
 resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {

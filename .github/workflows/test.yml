@@ -1,0 +1,81 @@
+name: Test AKS demo
+
+on:
+  workflow_dispatch:
+
+jobs:
+  testAksDemo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+ 
+      - name: Install Bicep CLI
+        run: | 
+          curl -Lo bicepinstall https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+          chmod +x ./bicepinstall
+          sudo mv ./bicepinstall /usr/local/bin/bicep
+          bicep -v
+       
+      - name: Build Bicep template
+        run: bicep build ./declarative/infra/main.bicep
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure testing Resource Group exists
+        uses: Azure/CLI@v1
+        with:
+          inlineScript: |
+            #!/bin/bash
+            if $(az group exists -n aks-demo-test) ; then
+              echo "Azure resource group already exists, skipping creation..."
+            else
+              az group create -n aks-demo-test --location westeurope
+              echo "Azure resource group created"
+            fi
+
+      - name: Validate ARM template
+        uses: Azure/CLI@v1
+        with:
+          inlineScript: |
+            #!/bin/bash
+            az deployment group validate --template-file ./declarative/infra/main.json -g aks-demo-test \
+              --parameters sshKey="${{ secrets.SSH_PUBLIC_KEY }}" \
+              --parameters userObjectId=${{ secrets.USER_OBJECT_ID }} \
+              --parameters userName=${{ secrets.USER_NAME }} \
+              --parameters twitterConsumerKey=${{ secrets.twitterConsumerKey }}  \
+              --parameters twitterConsumerSecret=${{ secrets.twitterConsumerSecret }}  \
+              --parameters twitterAccessToken=${{ secrets.twitterAccessToken }}  \
+              --parameters twitterAccessSecret=${{ secrets.twitterAccessSecret }}
+
+      - name: Test ARM Templates - files
+        uses: aliencube/arm-ttk-actions@v0.3
+        with:
+          path: ./declarative/infra 
+          files: main.json
+
+      - name: Plan deployment (what-if)
+        uses: Azure/CLI@v1
+        with:
+          inlineScript: |
+            #!/bin/bash
+            az deployment group what-if --template-file ./declarative/infra/main.json -g aks-demo-test \
+              --parameters sshKey="${{ secrets.SSH_PUBLIC_KEY }}" \
+              --parameters userObjectId=${{ secrets.USER_OBJECT_ID }} \
+              --parameters userName=${{ secrets.USER_NAME }} \
+              --parameters twitterConsumerKey=${{ secrets.twitterConsumerKey }}  \
+              --parameters twitterConsumerSecret=${{ secrets.twitterConsumerSecret }}  \
+              --parameters twitterAccessToken=${{ secrets.twitterAccessToken }}  \
+              --parameters twitterAccessSecret=${{ secrets.twitterAccessSecret }}
+
+      - name: Destroy testing resource group
+        uses: Azure/CLI@v1
+        with:
+          inlineScript: |
+            #!/bin/bash
+            az group delete -n aks-demo-test -y
+
+     

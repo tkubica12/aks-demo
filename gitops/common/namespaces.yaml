@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dapr
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: opentelemetry
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openservicemesh
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nginxingress

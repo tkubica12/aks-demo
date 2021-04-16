@@ -3,6 +3,7 @@ kind: HelmRelease
 metadata:
   name: opentelemetry
 spec:
+  targetNamespace: opentelemetry
   chart:
     git: https://github.com/tkubica12/aks-demo
     ref: master

@@ -3,6 +3,7 @@ kind: HelmRelease
 metadata:
   name: dapr-system
 spec:
+  targetNamespace: dapr
   chart:
     repository: https://dapr.github.io/helm-charts
     name: dapr

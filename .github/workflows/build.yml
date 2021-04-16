@@ -49,10 +49,18 @@ jobs:
 
       - name: Deploy infrastructure
         uses: azure/arm-deploy@v1
+        id: deploy
         with:
           resourceGroupName: aks-demo
           template: ./declarative/infra/maintemplate.json
-          parameters: sshKey="${{ secrets.SSH_PUBLIC_KEY }}" userObjectId=${{ secrets.USER_OBJECT_ID }} userName=${{ secrets.USER_NAME }} twitterConsumerKey=${{ secrets.twitterConsumerKey }}  twitterConsumerSecret=${{ secrets.twitterConsumerSecret }}  twitterAccessToken=${{ secrets.twitterAccessToken }}  twitterAccessSecret=${{ secrets.twitterAccessSecret }}
+          parameters: >-
+            sshKey="${{ secrets.SSH_PUBLIC_KEY }}" 
+            userObjectId=${{ secrets.USER_OBJECT_ID }} 
+            userName=${{ secrets.USER_NAME }} 
+            twitterConsumerKey=${{ secrets.twitterConsumerKey }}  
+            twitterConsumerSecret=${{ secrets.twitterConsumerSecret }}  
+            twitterAccessToken=${{ secrets.twitterAccessToken }}  
+            twitterAccessSecret=${{ secrets.twitterAccessSecret }}
 
       - name: Deploy Pod identity
         uses: Azure/CLI@v1
@@ -84,6 +92,20 @@ jobs:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
           cluster-name: aks-demo
           resource-group: aks-demo
+
+      - name: Push configurations to cluster
+        uses: azure/k8s-create-secret@v1
+        with:
+          namespace: default
+          secret-type: generic
+          arguments: >-
+            --from-literal=subscriptionId=${{ steps.deploy.outputs.subscriptionId }} 
+            --from-literal=tenantId=${{ steps.deploy.outputs.tenantId }} 
+            --from-literal=rg=${{ steps.deploy.outputs.resourceGroupName }} 
+            --from-literal=dnsZone=${{ steps.deploy.outputs.dnsZoneName }} 
+            --from-literal=keyvaultName=${{ steps.deploy.outputs.keyvaultName }} 
+            --from-literal=keyvaultIdentity=${{ steps.deploy.outputs.keyvaultIdentity }} 
+          secret-name: configurations
 
       - name: Onboard cluster to GitOps
         uses: Azure/CLI@v1

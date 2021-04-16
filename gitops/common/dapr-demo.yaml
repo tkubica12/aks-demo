@@ -1,21 +1,21 @@
 apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 metadata:
-  name: basic-demo
+  name: dapr-demo
 spec:
+  targetNamespace: dapr
   chart:
     git: https://github.com/tkubica12/aks-demo
     ref: master
-    path: helm/basic-demo
+    path: helm/dapr-demo
   valuesFrom:
   - secretKeyRef:
       name: configurations
       namespace: default
       key: values.yaml
       optional: true
-  # values:
-  #   subscriptionId: a0f4a733-4fce-4d49-b8a8-d30541fc1b45
-  #   tenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
-  #   rg: aks-demo
-  #   dnsZone: private.demo
-  #   keyvaultName: kv-5jl6tmwrp3lkm
+  values:
+    providerimage: tkubica/twitter-provider:1
+    processorimage: tkubica/twitter-processor:1
+    viewerimage: tkubica/twitter-viewer:1
+    query: Microsoft

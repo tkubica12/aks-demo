@@ -9,4 +9,4 @@ spec:
     - name: vaultName
       value: {{ .Values.keyvaultName }}
     - name: spnClientId
-      value: {{ .Values.clientId }}
+      value: {{ .Values.keyvaultIdentity }}

@@ -5,6 +5,3 @@ helm upgrade -i dapr-demo . \
     --set providerimage=tkubica/twitter-provider:1 \
     --set processorimage=tkubica/twitter-processor:1 \
     --set viewerimage=tkubica/twitter-viewer:1
-
-
-curl http://localhost:3500/v1.0/secrets/azurekeyvault/cs-endpoint

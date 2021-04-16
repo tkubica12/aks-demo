@@ -60,3 +60,8 @@ module services './services.bicep' = {
 }
 
 output keyvaultName string = services.outputs.keyvaultName
+output keyvaultIdentity string = aks.outputs.keyvaultIdentity
+output subscriptionId string = subscription().subscriptionId
+output tenantId string = subscription().tenantId
+output resourceGroupName string = resourceGroup().name
+output dnsZoneName string = networking.outputs.dnsZoneName

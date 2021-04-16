@@ -229,3 +229,5 @@ resource acr 'Microsoft.ContainerRegistry/registries@2020-11-01-preview' = {
     adminUserEnabled: false
   }
 }
+
+output keyvaultIdentity string = keyvaultIdentity.properties.clientId

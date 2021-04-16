@@ -20,71 +20,81 @@ jobs:
     steps:
       - uses: actions/checkout@v2
  
-      - name: Install Bicep CLI
-        run: | 
-          curl -Lo bicepinstall https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
-          chmod +x ./bicepinstall
-          sudo mv ./bicepinstall /usr/local/bin/bicep
-          bicep -v
+      # - name: Install Bicep CLI
+      #   run: | 
+      #     curl -Lo bicepinstall https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+      #     chmod +x ./bicepinstall
+      #     sudo mv ./bicepinstall /usr/local/bin/bicep
+      #     bicep -v
        
-      - name: Build Bicep template
-        run:    bicep build ./declarative/infra/maintemplate.bicep
+      # - name: Build Bicep template
+      #   run: bicep build ./declarative/infra/maintemplate.bicep
 
-      - name: Azure login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # - name: Azure login
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Ensure Resource Group exists
-        uses: Azure/CLI@v1
-        with:
-          inlineScript: |
-            #!/bin/bash
-            if $(az group exists -n aks-demo) ; then
-              echo "Azure resource group already exists, skipping creation..."
-            else
-              az group create -n aks-demo --location westeurope
-              echo "Azure resource group created"
-            fi
+      # - name: Ensure Resource Group exists
+      #   uses: Azure/CLI@v1
+      #   with:
+      #     inlineScript: |
+      #       #!/bin/bash
+      #       if $(az group exists -n aks-demo) ; then
+      #         echo "Azure resource group already exists, skipping creation..."
+      #       else
+      #         az group create -n aks-demo --location westeurope
+      #         echo "Azure resource group created"
+      #       fi
 
-      - name: Deploy infrastructure
-        uses: azure/arm-deploy@v1
-        id: deploy
-        with:
-          resourceGroupName: aks-demo
-          template: ./declarative/infra/maintemplate.json
-          parameters: >-
-            sshKey="${{ secrets.SSH_PUBLIC_KEY }}" 
-            userObjectId=${{ secrets.USER_OBJECT_ID }} 
-            userName=${{ secrets.USER_NAME }} 
-            twitterConsumerKey=${{ secrets.twitterConsumerKey }}  
-            twitterConsumerSecret=${{ secrets.twitterConsumerSecret }}  
-            twitterAccessToken=${{ secrets.twitterAccessToken }}  
-            twitterAccessSecret=${{ secrets.twitterAccessSecret }}
+      # - name: Deploy infrastructure
+      #   uses: azure/arm-deploy@v1
+      #   id: deploy
+      #   with:
+      #     resourceGroupName: aks-demo
+      #     template: ./declarative/infra/maintemplate.json
+      #     parameters: >-
+      #       sshKey="${{ secrets.SSH_PUBLIC_KEY }}" 
+      #       userObjectId=${{ secrets.USER_OBJECT_ID }} 
+      #       userName=${{ secrets.USER_NAME }} 
+      #       twitterConsumerKey=${{ secrets.twitterConsumerKey }}  
+      #       twitterConsumerSecret=${{ secrets.twitterConsumerSecret }}  
+      #       twitterAccessToken=${{ secrets.twitterAccessToken }}  
+      #       twitterAccessSecret=${{ secrets.twitterAccessSecret }}
 
-      - name: Deploy Pod identity
-        uses: Azure/CLI@v1
-        with:
-          inlineScript: |
-            #!/bin/bash
-            export rg=aks-demo
-            az extension add -n aks-preview -y
-            az aks update --enable-pod-identity -n aks-demo -g $rg
-            az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
-                --namespace default \
-                --name external-dns \
-                --identity-resource-id $(az identity show -n externalDns -g $rg --query id -o tsv)
-            az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
-                --namespace default \
-                --name secrets-reader \
-                --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
-            az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
-                --namespace default \
-                --name psql-user \
-                --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
+      # - name: Deploy Pod identity
+      #   uses: Azure/CLI@v1
+      #   with:
+      #     inlineScript: |
+      #       #!/bin/bash
+      #       export rg=aks-demo
+      #       az extension add -n aks-preview -y
+      #       az aks update --enable-pod-identity -n aks-demo -g $rg
+      #       az aks pod-identity add -g $rg \
+      #           --cluster-name aks-demo \
+      #           --namespace default \
+      #           --name external-dns \
+      #           --identity-resource-id $(az identity show -n externalDns -g $rg --query id -o tsv)
+      #       az aks pod-identity add -g $rg \
+      #           --cluster-name aks-demo \
+      #           --namespace default \
+      #           --name secrets-reader \
+      #           --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
+      #       az aks pod-identity add -g $rg \
+      #           --cluster-name aks-demo \
+      #           --namespace opentelemetry \
+      #           --name secrets-reader \
+      #           --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
+      #       az aks pod-identity add -g $rg \
+      #           --cluster-name aks-demo \
+      #           --namespace dapr \
+      #           --name secrets-reader \
+      #           --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
+      #       az aks pod-identity add -g $rg \
+      #           --cluster-name aks-demo \
+      #           --namespace default \
+      #           --name psql-user \
+      #           --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
 
       - name: Get AKS credentials
         uses: Azure/aks-set-context@v1
@@ -98,13 +108,13 @@ jobs:
         with:
           namespace: default
           secret-type: generic
-          arguments: >-
-            --from-literal=subscriptionId=${{ steps.deploy.outputs.subscriptionId }} 
-            --from-literal=tenantId=${{ steps.deploy.outputs.tenantId }} 
-            --from-literal=rg=${{ steps.deploy.outputs.resourceGroupName }} 
-            --from-literal=dnsZone=${{ steps.deploy.outputs.dnsZoneName }} 
-            --from-literal=keyvaultName=${{ steps.deploy.outputs.keyvaultName }} 
-            --from-literal=keyvaultIdentity=${{ steps.deploy.outputs.keyvaultIdentity }} 
+          arguments: |
+            --from-literal=values.yaml='subscriptionId=${{ steps.deploy.outputs.subscriptionId }} 
+            tenantId=${{ steps.deploy.outputs.tenantId }} 
+            rg=${{ steps.deploy.outputs.resourceGroupName }} 
+            dnsZone=${{ steps.deploy.outputs.dnsZoneName }} 
+            keyvaultName=${{ steps.deploy.outputs.keyvaultName }} 
+            keyvaultIdentity=${{ steps.deploy.outputs.keyvaultIdentity }} 
           secret-name: configurations
 
       - name: Onboard cluster to GitOps

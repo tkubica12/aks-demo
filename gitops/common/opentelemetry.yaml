@@ -13,3 +13,4 @@ spec:
     tfgenRepository: tkubica/opentelemetry-tfgen:1
     javaRepository: tkubica/java-autoinstrument:1
     mysql_password: Azure12345678
+    tenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47

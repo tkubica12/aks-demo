@@ -103,7 +103,7 @@ jobs:
           cluster-name: aks-demo
           resource-group: aks-demo
 
-      - name: Install Bicep CLI
+      - name: Prepare values.yaml
         run: | 
           echo subscriptionId=${{ steps.deploy.outputs.subscriptionId }} > values.yaml
           echo tenantId=${{ steps.deploy.outputs.tenantId }}  >> values.yaml

@@ -118,7 +118,7 @@ jobs:
           namespace: default
           secret-type: generic
           arguments: |
-            --from-file=values.yaml
+            --from-literal=values.yaml=$(cat values.yaml)
           secret-name: configurations
 
       - name: Onboard cluster to GitOps

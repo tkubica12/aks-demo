@@ -105,12 +105,12 @@ jobs:
 
       - name: Prepare values.yaml
         run: | 
-          echo subscriptionId=${{ steps.deploy.outputs.subscriptionId }} > values.yaml
-          echo tenantId=${{ steps.deploy.outputs.tenantId }}  >> values.yaml
-          echo rg=${{ steps.deploy.outputs.resourceGroupName }}   >> values.yaml
-          echo dnsZone=${{ steps.deploy.outputs.dnsZoneName }}  >> values.yaml
-          echo keyvaultName=${{ steps.deploy.outputs.keyvaultName }}   >> values.yaml
-          echo keyvaultIdentity=${{ steps.deploy.outputs.keyvaultIdentity }}  >> values.yaml
+          echo subscriptionId: ${{ steps.deploy.outputs.subscriptionId }} > values.yaml
+          echo tenantId: ${{ steps.deploy.outputs.tenantId }}  >> values.yaml
+          echo rg: ${{ steps.deploy.outputs.resourceGroupName }}   >> values.yaml
+          echo dnsZone: ${{ steps.deploy.outputs.dnsZoneName }}  >> values.yaml
+          echo keyvaultName: ${{ steps.deploy.outputs.keyvaultName }}   >> values.yaml
+          echo keyvaultIdentity: ${{ steps.deploy.outputs.keyvaultIdentity }}  >> values.yaml
 
       - name: Push configurations to cluster
         uses: azure/k8s-create-secret@v1

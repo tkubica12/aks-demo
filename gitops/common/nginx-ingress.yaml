@@ -1,0 +1,16 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: nginx-ingress
+spec:
+  targetNamespace: nginxingress
+  chart:
+    repository: https://kubernetes.github.io/ingress-nginx
+    name: ingress-nginx
+  values:
+    controller:
+      service:
+        loadBalancerIP: 10.0.1.200
+        annotations:
+          service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+          service.beta.kubernetes.io/azure-load-balancer-internal-subnet: "intlb-subnet"

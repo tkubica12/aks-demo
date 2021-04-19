@@ -111,6 +111,7 @@ jobs:
           echo dnsZone: ${{ steps.deploy.outputs.dnsZoneName }}  >> values.yaml
           echo keyvaultName: ${{ steps.deploy.outputs.keyvaultName }}   >> values.yaml
           echo keyvaultIdentity: ${{ steps.deploy.outputs.keyvaultIdentity }}  >> values.yaml
+          echo appGwDns: ${{ steps.deploy.outputs.appGwDns }}  >> values.yaml
 
       - name: Push configurations to cluster
         uses: azure/k8s-create-secret@v1

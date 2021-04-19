@@ -65,3 +65,4 @@ output subscriptionId string = subscription().subscriptionId
 output tenantId string = subscription().tenantId
 output resourceGroupName string = resourceGroup().name
 output dnsZoneName string = networking.outputs.dnsZoneName
+output appGwDns string = networking.outputs.appGwDns

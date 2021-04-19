@@ -81,6 +81,9 @@ resource appGwIp 'Microsoft.Network/publicIPAddresses@2020-05-01' = {
   }
   properties: {
     publicIPAllocationMethod: 'Static'
+    dnsSettings: {
+      domainNameLabel: uniqueString(subscription().id)
+    }
   }
 }
 
@@ -194,3 +197,4 @@ output appgwId string = appGw.id
 output appgwName string = appGw.name
 output dnsZoneName string = privateDnsZone.name
 output privateDnsPsqlId string = plinkDnsPsql.id
+output appGwDns string = appGwIp.properties.dnsSettings.fqdn

@@ -10,7 +10,10 @@ spec:
     - http:
         paths:
         - path: /
+          pathType: Prefix
           backend:
-            serviceName: myweb
-            servicePort: 80
+            service:
+              name: myweb
+              port:
+                number: 80
       host: {{ .Values.appGwDns }}

@@ -82,7 +82,7 @@ resource appGwIp 'Microsoft.Network/publicIPAddresses@2020-05-01' = {
   properties: {
     publicIPAllocationMethod: 'Static'
     dnsSettings: {
-      domainNameLabel: uniqueString(subscription().id)
+      domainNameLabel: 'gw${uniqueString(subscription().id)}'
     }
   }
 }

@@ -8,6 +8,8 @@ spec:
     git: https://github.com/tkubica12/aks-demo
     ref: master
     path: helm/dapr-demo
+  dependsOn:
+    - name: dapr-system
   valuesFrom:
   - secretKeyRef:
       name: configurations

@@ -8,6 +8,7 @@ param logAnalyticsResourceId string
 param dnsZoneName string
 param keyvaultName string
 param userObjectId string
+param aksVersion string
 
 var location = resourceGroup().location
 var roleContributor = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
@@ -116,7 +117,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
     }
   }
   properties: {
-    kubernetesVersion: '1.19.6'
+    kubernetesVersion: aksVersion
     dnsPrefix: 'aks-demo'
     agentPoolProfiles: [
       {

@@ -3,6 +3,7 @@ param sshKey string
 
 param userObjectId string
 param userName string
+param aksVersion string
 
 param twitterConsumerKey string
 param twitterConsumerSecret string
@@ -39,6 +40,8 @@ module aks './aks.bicep' = {
     dnsZoneName: networking.outputs.dnsZoneName
     keyvaultName: services.outputs.keyvaultName
     userObjectId: userObjectId
+    aksVersion: aksVersion
+
   }
 }
 

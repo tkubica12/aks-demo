@@ -14,6 +14,8 @@ metadata:
   name: openservicemesh
   labels:
     openservicemesh.io/monitored-by: osm
+  annotations:
+    openservicemesh.io/sidecar-injection: enabled
 ---
 apiVersion: v1
 kind: Namespace

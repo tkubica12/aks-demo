@@ -259,3 +259,4 @@ resource acr 'Microsoft.ContainerRegistry/registries@2020-11-01-preview' = {
 }
 
 output keyvaultIdentity string = keyvaultIdentity.properties.clientId
+output aksNodeResourceGroup string = aks.properties.nodeResourceGroup

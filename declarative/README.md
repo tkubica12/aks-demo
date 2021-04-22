@@ -65,6 +65,59 @@ kubectl exec $pod -it -- cat /mnt/secrets-store/mysecret
 
 ```
 
+## DAPR
+Dapr Twitter analytics demo is deployed leveraging Twitter binding, pub/sub (via Service Bus) and state store (Storage Table).
+
+- Portforward to UI and see tweets are displayed and scored for sentiment using Azure Cognitive Services
+- Check message counters in Service Bus
+- Check data stored in Storage Table
+- See Application Insights for application map and traces
+
+## OpenTelemetry demo
+App with various components and traffic generator is deployed and exporter is used to send to Application Insights backend:
+- See Python source code using universal OpenTelemetry SDK together with Azure Monitor exporter
+- See Java container with Application Insights agent injected without any code modifications
+- See Application Insights map and traces
+
+## Open Service Mesh demo
+
+### Traffic Split
+To test canary 90/10 split use app1 and test curl to app2 multiple times.
+
+```bash
+export pod=$(kubectl get pod -l app=app1 -n openservicemesh -o=jsonpath='{.items[0].metadata.name}')
+kubectl exec $pod -n openservicemesh -it -- apk add curl
+kubectl exec $pod -n openservicemesh -it -- sh -c 'while true; do curl app2.openservicemesh; sleep 0.2; done'
+kubectl exec $pod -n openservicemesh -it -- sh -c 'while true; do curl -H "tester: true" app2-ab.openservicemesh; sleep 0.2; done'
+```
+
+OSM currently does not support SMI Traffic Split v1alpha4 which adds HTTPRouteGroup match to split allowing A/B testing scenarios. This is planned for 0.9.0: https://github.com/openservicemesh/osm/issues/2368
+
+Objects are prepared, but commented until supported.
+
+```bash
+export pod=$(kubectl get pod -l app=app1 -n openservicemesh -o=jsonpath='{.items[0].metadata.name}')
+kubectl exec $pod -n openservicemesh -it -- apk add curl
+kubectl exec $pod -n openservicemesh -it -- sh -c 'while true; do curl -H "tester: true" app2-ab.openservicemesh; sleep 0.2; done'
+```
+
+### Traffic Access Control
+WIP
+
+Default installation is configured to allow all (permissive mode). Let's make this restrictive.
+
+```bash
+kubectl patch ConfigMap -n kube-system osm-config --type merge --patch '{"data":{"permissive_traffic_policy_mode":"false"}}'
+```
+
+```bash
+export pod=$(kubectl get pod -l app=app1 -n openservicemesh -o=jsonpath='{.items[0].metadata.name}')
+kubectl exec $pod -n openservicemesh -it -- apk add curl
+kubectl exec $pod -n openservicemesh -it -- sh -c 'curl -v app2-v1.openservicemesh'
+```
+
+### Traffic Metrics
+TBD
 
 # Debug
 ## Creating infrastructure using CLI

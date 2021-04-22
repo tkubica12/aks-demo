@@ -1,0 +1,29 @@
+# Waiting for OSM support of TrafficSplit v1alpha4 for A/B testing (HTTPRouteGroup match)
+# https://github.com/openservicemesh/osm/issues/2368
+# Planned for 0.9.0
+
+
+# apiVersion: split.smi-spec.io/v1alpha2
+# kind: TrafficSplit
+# metadata:
+#   name: app2-ab
+# spec:
+#   service: app2-ab
+#   matches:
+#   - kind: HTTPRouteGroup
+#     name: ab-test
+#   backends:
+#   - service: app2-v1
+#     weight: 0
+#   - service: app2-v2
+#     weight: 100
+# ---
+# apiVersion: specs.smi-spec.io/v1alpha4
+# kind: HTTPRouteGroup
+# metadata:
+#   name: ab-test
+# matches:
+# - name: testers
+#   headers:
+#   - tester: "true"
+

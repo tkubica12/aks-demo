@@ -1,0 +1,11 @@
+apiVersion: split.smi-spec.io/v1alpha2
+kind: TrafficSplit
+metadata:
+  name: app2-canary
+spec:
+  service: app2
+  backends:
+  - service: app2-v1
+    weight: 95
+  - service: app2-v2
+    weight: 5

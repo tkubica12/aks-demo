@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app2-v2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app2
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: app2
+        version: v1
+    spec:
+      serviceAccountName: app2
+      containers:
+      - name: myweb
+        image: tkubica/web:python-2
+        env:
+        - name: PORT
+          value: "80"
+        - name: INFO
+          value: "app2-v2"
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64M
+          limits:
+            cpu: 500m
+            memory: 256M
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: app2-v2
+spec:
+  selector:
+    app: app2
+    version: v2
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80

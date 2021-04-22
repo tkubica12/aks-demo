@@ -1,0 +1,27 @@
+# kind: HTTPRouteGroup
+# apiVersion: specs.smi-spec.io/v1alpha4
+# metadata:
+#   name: routes2
+# spec:
+#   matches:
+#   - name: all-gets
+#     pathRegex: ".*"
+#     methods:
+#       - GET
+# ---
+# kind: TrafficTarget
+# apiVersion: access.smi-spec.io/v1alpha3
+# metadata:
+#   name: access-app1-to-app3
+# spec:
+#   destination:
+#     kind: ServiceAccount
+#     name: app3
+#   rules:
+#   - kind: HTTPRouteGroup
+#     name: routes1
+#     matches:
+#     - all-gets
+#   sources:
+#   - kind: ServiceAccount
+#     name: app1

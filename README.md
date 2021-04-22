@@ -39,6 +39,8 @@ Implemented features
 - Secrets management with Azure Key Vault and CSI
 - Using Azure Database for PostgreSQL with Private Link, AAD integration and Pod identity
 - Distributed Tracing with Application Insights, OpenTelemetry
+- Open Service Mesh
+- DAPR
   
 # Backlog of features
 - Open Service Mesh

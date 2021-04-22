@@ -1,0 +1,4 @@
+apiVersion: v2
+name: osm-demo
+description: osm-demo
+version: 0.1.0

@@ -96,6 +96,11 @@ jobs:
                 --namespace default \
                 --name psql-user \
                 --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
+            az aks pod-identity add -g $rg \
+                --cluster-name aks-demo \
+                --namespace keda \
+                --name keda \
+                --identity-resource-id $(az identity show -n keda -g $rg --query id -o tsv)
 
       - name: Get AKS credentials
         uses: Azure/aks-set-context@v1

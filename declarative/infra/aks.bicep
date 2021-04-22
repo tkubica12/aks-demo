@@ -16,6 +16,8 @@ var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 var roleDnsContributor = 'b12aa53e-6015-4669-85d0-8515ebb3ae7f'
 var roleKeyVaultSecretsUser = '4633458b-17de-408a-b874-0445c86b69e6'
 var roleAksClusterAdmin = 'b1ff04bb-8a4e-4dc4-8eb5-8693973ce19b'
+var roleReader = 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
+var roleMonitoringReader = '43d0d8ad-25c7-4714-9337-8ba259a9fe05'
 var vmSize = 'Standard_D4ds_v4'
 
 // Identities and RBAC
@@ -103,6 +105,31 @@ resource keyvaultSecretsRole 'Microsoft.Authorization/roleAssignments@2020-04-01
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleKeyVaultSecretsUser)
     principalId: keyvaultIdentity.properties.principalId
+  }
+}
+
+resource kedaIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  name: 'keda'
+  location: location
+}
+
+resource kedaReaderRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid('kedaReaderRole', resourceGroup().id)
+  scope: resourceGroup()
+  properties: {
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleReader)
+    principalId: kedaIdentity.properties.principalId
+  }
+}
+
+resource kedaMonitoringReaderRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  name: guid('kedaMonitoringReaderRole', resourceGroup().id)
+  scope: resourceGroup()
+  properties: {
+    principalType: 'ServicePrincipal'
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleMonitoringReader)
+    principalId: kedaIdentity.properties.principalId
   }
 }
 

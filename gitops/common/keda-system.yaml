@@ -1,0 +1,14 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: keda-system
+spec:
+  targetNamespace: keda
+  chart:
+    repository: https://kedacore.github.io/charts
+    name: kedacore
+    version: 2.2.1
+  values:
+    podIdentity:
+      activeDirectory:
+        identity: keda

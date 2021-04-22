@@ -7,7 +7,7 @@ spec:
   chart:
     repository: https://kedacore.github.io/charts
     name: kedacore
-    version: 2.2.1
+    version: 2.2.0
   values:
     podIdentity:
       activeDirectory:

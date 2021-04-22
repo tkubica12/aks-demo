@@ -6,8 +6,8 @@ spec:
   targetNamespace: keda
   chart:
     repository: https://kedacore.github.io/charts
-    name: kedacore
-    version: v2.2.1
+    name: keda
+    version: 2.2.1
   values:
     podIdentity:
       activeDirectory:

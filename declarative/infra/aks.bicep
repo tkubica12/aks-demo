@@ -26,7 +26,6 @@ resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-3
   location: location
 }
 
-
 resource aksIdentityRoleAcr 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   name: guid('aksIdentityRoleAcr', resourceGroup().id)
   scope: aks
@@ -54,7 +53,6 @@ resource userRoleAksClusterAdmin 'Microsoft.Authorization/roleAssignments@2020-0
     principalId: aksIdentity.properties.principalId
   }
 }
-
 
 resource appGwExisting 'Microsoft.Network/applicationGateways@2020-05-01' existing = {
   name: 'appgw'
@@ -191,7 +189,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
         '2f003f7d-d039-4f87-8575-c2d45d091c2c'
       ]
     }
-    addonProfiles:{
+    addonProfiles: {
       'azurepolicy': {
         enabled: true
       }
@@ -216,34 +214,33 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
       'ingressApplicationGateway': {
         enabled: true
         config: {
-            applicationGatewayId: appgwId
-            watchNamespace: ''
+          applicationGatewayId: appgwId
+          watchNamespace: ''
         }
-    }
+      }
     }
     // podIdentityProfile: {
     //   enabled: true
     //   allowNetworkPluginKubenet: false
     //   userAssignedIdentities: [
-      //     {
-        //       name: 'secrets-reader'
-        //       namespace: 'default'
-        //       identity: {
-          //         resourceId: externalDnsIdentity.id
-          //         clientId: externalDnsIdentity.properties.clientId
-          //         objectId: externalDnsIdentity.properties.principalId
-          //       }
-          //     }
-          //   ]
-          // userAssignedIdentityExceptions: [
-            //   {
-              //     name: 'string'
-              //     namespace: 'string'
-              //     podLabels: {}
-              //   }
-              // ]
-              // }
-
+    //     {
+    //       name: 'secrets-reader'
+    //       namespace: 'default'
+    //       identity: {
+    //         resourceId: externalDnsIdentity.id
+    //         clientId: externalDnsIdentity.properties.clientId
+    //         objectId: externalDnsIdentity.properties.principalId
+    //       }
+    //     }
+    //   ]
+    // userAssignedIdentityExceptions: [
+    //   {
+    //     name: 'string'
+    //     namespace: 'string'
+    //     podLabels: {}
+    //   }
+    // ]
+    // }
   }
 }
 
@@ -260,3 +257,4 @@ resource acr 'Microsoft.ContainerRegistry/registries@2020-11-01-preview' = {
 
 output keyvaultIdentity string = keyvaultIdentity.properties.clientId
 output aksNodeResourceGroup string = aks.properties.nodeResourceGroup
+

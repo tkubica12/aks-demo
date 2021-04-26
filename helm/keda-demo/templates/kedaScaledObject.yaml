@@ -1,0 +1,34 @@
+  
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: azure-monitor-auth
+spec:
+  podIdentity:
+    provider: azure
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: appgw
+spec:
+  scaleTargetRef:
+    name: kedaweb
+  pollingInterval: 5
+  cooldownPeriod:  15
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+  - type: azure-monitor
+    metadata:
+      resourceURI: Microsoft.Network/applicationGateways/appgw
+      tenantId: {{ .Values.tenantId }}
+      subscriptionId: {{ .Values.subscriptionId }}
+      resourceGroupName: {{ .Values.rg }}
+      metricName: AvgRequestCountPerHealthyHost
+      metricFilter: BackendSettingsPool eq 'pool-keda-kedaweb-80-bp-80~bp-keda-kedaweb-80-80-ingress-agic-kedaweb' 
+      metricAggregationInterval: "0:1:0"
+      metricAggregationType: Average
+      targetValue: "230"
+    authenticationRef:
+        name: azure-monitor-auth

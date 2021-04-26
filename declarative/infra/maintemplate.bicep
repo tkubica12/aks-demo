@@ -41,7 +41,6 @@ module aks './aks.bicep' = {
     keyvaultName: services.outputs.keyvaultName
     userObjectId: userObjectId
     aksVersion: aksVersion
-
   }
 }
 

@@ -93,6 +93,11 @@ jobs:
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
                 --cluster-name aks-demo \
+                --namespace keda \
+                --name secrets-reader \
+                --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
+            az aks pod-identity add -g $rg \
+                --cluster-name aks-demo \
                 --namespace default \
                 --name psql-user \
                 --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)

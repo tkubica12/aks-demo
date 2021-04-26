@@ -1,0 +1,25 @@
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: azure-queue-auth
+spec:
+  podIdentity:
+    provider: azure
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: queuq
+  labels: {}
+spec:
+  scaleTargetRef:
+    name: keda-worker
+  maxReplicaCount: 10
+  triggers:
+  - type: azure-queue
+    metadata:
+      direction: in
+      queueName: myqueue
+      connectionFromEnv: AzureWebJobsStorage
+    authenticationRef:
+      name: azure-queue-auth

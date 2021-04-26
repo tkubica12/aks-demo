@@ -322,6 +322,16 @@ resource kvCsEndpoint 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
   }
 }
 
+resource kvStorageString 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
+  name: '${keyvault.name}/storage'
+  dependsOn: [
+    kvIdentityUser
+  ]
+  properties: {
+    value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, '2019-04-01').keys[0].value};EndpointSuffix=core.windows.net'
+  }
+}
+
 // Service Bus
 resource sb 'Microsoft.ServiceBus/namespaces@2017-04-01' = {
   name: 'sb${uniqueString(subscription().id)}'

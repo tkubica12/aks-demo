@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keda-worker
+  labels:
+    app: keda-worker
+spec:
+  selector:
+    matchLabels:
+      app: keda-worker
+  template:
+    metadata:
+      labels:
+        app: keda-worker
+        aadpodidbinding: secrets-reader
+    spec:
+      containers:
+      - name: keda-worker
+        image: docker.io/keda-worker:latest
+        env:
+        - name: AzureFunctionsJobHost__functions__0
+          value: QueueTrigger
+        - name: AzureWebJobsStorage
+            valueFrom:
+                secretKeyRef:
+                  name: storage
+                  key: storage
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+        startupProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+        volumeMounts:
+          - name: secrets-store-inline
+            mountPath: "/mnt/secrets-store"
+            readOnly: true
+      volumes:
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: keda-secrets-keyvault

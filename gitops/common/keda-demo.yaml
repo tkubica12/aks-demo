@@ -1,0 +1,18 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: keda-demo
+spec:
+  targetNamespace: keda
+  chart:
+    git: https://github.com/tkubica12/aks-demo
+    ref: master
+    path: helm/keda-demo
+  dependsOn:
+    - name: keda-system
+  valuesFrom:
+  - secretKeyRef:
+      name: configurations
+      namespace: default
+      key: values.yaml
+      optional: true

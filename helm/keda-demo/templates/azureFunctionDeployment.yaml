@@ -16,15 +16,17 @@ spec:
     spec:
       containers:
       - name: keda-worker
-        image: docker.io/keda-worker:latest
+        image: tkubica/keda-worker:1
         env:
         - name: AzureFunctionsJobHost__functions__0
           value: QueueTrigger
+        - name: queuename
+          value: myqueue
         - name: AzureWebJobsStorage
-            valueFrom:
-                secretKeyRef:
-                  name: storage
-                  key: storage
+          valueFrom:
+            secretKeyRef:
+              name: keda-secrets 
+              key: storage
         readinessProbe:
           failureThreshold: 3
           periodSeconds: 10

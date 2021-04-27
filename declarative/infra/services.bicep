@@ -414,4 +414,4 @@ output psqlUsername string = '${localUser}@${psql.name}'
 output psqlIdentityClientId string = psqlIdentity.properties.clientId
 output cognitiveServiceEndpoint string = cs.properties.endpoint
 output sbEndpoint string = sb.properties.serviceBusEndpoint
-
+output storageName string = storage.name

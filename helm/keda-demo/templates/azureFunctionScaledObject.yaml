@@ -16,5 +16,6 @@ spec:
       direction: in
       queueName: myqueue
       connectionFromEnv: AzureWebJobsStorage
+      accountName: {{ .Values.storageName }}
     authenticationRef:
       name: azure-monitor-auth

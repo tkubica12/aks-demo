@@ -69,3 +69,4 @@ output resourceGroupName string = resourceGroup().name
 output dnsZoneName string = networking.outputs.dnsZoneName
 output appGwDns string = networking.outputs.appGwDns
 output aksNodeResourceGroup string = aks.outputs.aksNodeResourceGroup
+output storageName string = services.outputs.storageName

@@ -269,6 +269,10 @@ resource storage 'Microsoft.Storage/storageAccounts@2019-06-01' = {
   }
 }
 
+resource queue 'Microsoft.Storage/storageAccounts/queueServices@2021-02-01' = {
+  name: '${storage.name}/myqueue'
+}
+
 resource kvStorageKey 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
   name: '${keyvault.name}/storage-key'
   dependsOn: [

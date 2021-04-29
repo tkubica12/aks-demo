@@ -124,10 +124,10 @@ TBD
 
 ```bash
 az bicep install
-az bicep build -f infra/main.bicep --stdout 
-az bicep build -f infra/main.bicep
+az bicep build -f infra/maintemplate.bicep --stdout 
+az bicep build -f infra/maintemplate.bicep
 az group create -n aks-demo -l westeurope
-az deployment group create -g aks-demo --template-file infra/main.json \
+az deployment group create -g aks-demo --template-file infra/maintemplate.json \
     --parameters sshKey=@~/.ssh/id_rsa.pub \
     --parameters userObjectId=$(az ad user show --id $(az account show --query user.name -o tsv) --query objectId -o tsv) \
     --parameters userName=$(az account show --query user.name -o tsv)

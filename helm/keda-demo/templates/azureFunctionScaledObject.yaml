@@ -8,14 +8,13 @@ spec:
     name: keda-worker
   pollingInterval: 5
   cooldownPeriod:  15
-  minReplicaCount: 0
+  minReplicaCount: 1
   maxReplicaCount: 5
   triggers:
   - type: azure-queue
     metadata:
       direction: in
       queueName: myqueue
-      # connectionFromEnv: AzureWebJobsStorage
       accountName: {{ .Values.storageName }}
     authenticationRef:
       name: azure-monitor-auth

@@ -79,6 +79,29 @@ App with various components and traffic generator is deployed and exporter is us
 - See Java container with Application Insights agent injected without any code modifications
 - See Application Insights map and traces
 
+## Scaling with KEDA
+There are two apps that scale based on Load:
+- web based on telemetry information from Azure Application Gateway ingress
+- worker based on messages in storage queue
+
+To generate web load:
+
+```bash
+ssh $(az network public-ip show -n jumpPublicIP -g $rg --query ipAddress -o tsv)
+    while true; do curl https://web3.private.demo -ks; done
+```
+
+To generate messages:
+
+```bash
+export storageName=$(az deployment group show -n maintemplate -g aks-demo --query properties.outputs.storageName.value -o tsv)
+export AZURE_STORAGE_CONNECTION_STRING=$(az storage account show-connection-string -n $storageName -g aks-demo --query connectionString -o tsv)
+for i in {1..200}
+do
+  az storage message put -q myqueue --content ahoj_$i
+done
+```
+
 ## Open Service Mesh demo
 
 ### Traffic Split

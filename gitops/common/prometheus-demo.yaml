@@ -1,0 +1,10 @@
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: prometheus-demo
+spec:
+  targetNamespace: prometheus
+  chart:
+    git: https://github.com/tkubica12/aks-demo
+    ref: master
+    path: helm/prometheus-demo

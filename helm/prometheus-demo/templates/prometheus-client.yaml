@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-client-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: prometheus-client
+  template:
+    metadata:
+      labels:
+        app: prometheus-client
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/"
+        prometheus.io/port: "8000"
+        prometheus.io/scheme: "http"
+    spec:
+      containers:
+      - name: prometheus-client
+        image: tkubica/prometheus-client
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: 50m
+            memory: 32M
+          limits:
+            cpu: 500m
+            memory: 256M

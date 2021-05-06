@@ -130,7 +130,7 @@ resource plinkPsqlDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2
   }
 }
 
-// Monitoring OpenTelemetry
+// Monitoring workspace
 resource logs 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
   name: uniqueString(subscription().id)
   location: location
@@ -140,6 +140,10 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
     }
   }
 }
+
+
+
+// Monitoring OpenTelemetry
 
 resource appinsights 'Microsoft.Insights/components@2020-02-02-preview' = {
   name: uniqueString(subscription().id)

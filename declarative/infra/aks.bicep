@@ -266,6 +266,52 @@ resource acr 'Microsoft.ContainerRegistry/registries@2020-11-01-preview' = {
   }
 }
 
+// Monitoring Prometheus workbook
+resource wbPrometheus 'Microsoft.Insights/workbooks@2020-10-20' = {
+  name: '12345678-0000-4fab-8140-d05cd339c80c'
+  location: location
+  kind: 'shared'
+  properties: {
+    displayName: 'Prometheus workbook'
+    version: '1.0'
+    sourceId: aks.id
+    category: 'container-insights'
+    serializedData: '''
+    {
+      "version": "Notebook/1.0",
+      "items": [
+        {
+          "type": 1,
+          "content": {
+            "json": "# Azure Monitor view from Prometheus metrics"
+          },
+          "name": "text - 0"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "InsightsMetrics \r\n| where Namespace == \"prometheus\"\r\n| where Name == \"request_processing_seconds_sum\"\r\n| extend parsedTags=parse_json(Tags)\r\n| project pod=tostring(parsedTags.pod_name), Val, TimeGenerated\r\n| order by pod asc, TimeGenerated asc\r\n| serialize \r\n| extend PrevVal = iif(prev(pod) != pod, 0.0, prev(Val)), PrevTimeGenerated = iif(prev(pod) != pod, datetime(null), prev(TimeGenerated))\r\n| where isnotnull(PrevTimeGenerated) and PrevTimeGenerated != TimeGenerated\r\n| extend Rate = iif(PrevVal > Val, Val / (datetime_diff('Second', TimeGenerated, PrevTimeGenerated) * 1), iif(PrevVal == Val, 0.0, (Val - PrevVal) / (datetime_diff('Second', TimeGenerated, PrevTimeGenerated) * 1)))\r\n| where isnotnull(Rate)\r\n| project TimeGenerated, pod, Rate\r\n| render timechart ",
+            "size": 0,
+            "timeContext": {
+              "durationMs": 3600000
+            },
+            "queryType": 0,
+            "resourceType": "microsoft.containerservice/managedclusters"
+          },
+          "name": "query - 1"
+        }
+      ],
+      "fallbackResourceIds": [
+        "${aks.id}"
+      ],
+      "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+    }
+    '''
+  }
+}
+
+
 output keyvaultIdentity string = keyvaultIdentity.properties.clientId
 output aksNodeResourceGroup string = aks.properties.nodeResourceGroup
 

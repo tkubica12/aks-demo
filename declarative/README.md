@@ -1,6 +1,26 @@
 # Demo
 To provision declarative demo use GitHub Actions. You can also run Actions to destroy environment.
 
+- [Demo](#demo)
+  - [Access Key Vault using managed identity](#access-key-vault-using-managed-identity)
+  - [Access PostgreSQL using managed identity and private link](#access-postgresql-using-managed-identity-and-private-link)
+  - [Use SecretProviderClass to access Key Vault secret](#use-secretproviderclass-to-access-key-vault-secret)
+  - [DAPR](#dapr)
+  - [OpenTelemetry demo](#opentelemetry-demo)
+  - [Collecting Prometheus metrics with Azure monitor](#collecting-prometheus-metrics-with-azure-monitor)
+  - [Scaling with KEDA](#scaling-with-keda)
+  - [Open Service Mesh demo](#open-service-mesh-demo)
+    - [Traffic Split](#traffic-split)
+    - [Traffic Access Control](#traffic-access-control)
+    - [Traffic Metrics](#traffic-metrics)
+- [Debug](#debug)
+  - [Creating infrastructure using CLI](#creating-infrastructure-using-cli)
+  - [Add identities to cluster](#add-identities-to-cluster)
+  - [Connect cluster to GitOps](#connect-cluster-to-gitops)
+  - [Access jump](#access-jump)
+- [Development - test only one module example](#development---test-only-one-module-example)
+  - [Destroy](#destroy)
+
 ## Access Key Vault using managed identity
 
 ```bash
@@ -78,6 +98,12 @@ App with various components and traffic generator is deployed and exporter is us
 - See Python source code using universal OpenTelemetry SDK together with Azure Monitor exporter
 - See Java container with Application Insights agent injected without any code modifications
 - See Application Insights map and traces
+
+## Collecting Prometheus metrics with Azure monitor
+1. See prometheus workspace - there is Deployment running exposing Prometheus metrics.
+2. Azure Monitor is configured to scrap metrics via ConfigMap in kube-system namespace.
+3. Pods to be scraped are selected using annotation
+4. Go to Azure portal, AKS UI and click Workbooks - there is visualization of scraped metrics
 
 ## Scaling with KEDA
 There are two apps that scale based on Load:

@@ -2,6 +2,7 @@
 To provision declarative demo use GitHub Actions. You can also run Actions to destroy environment.
 
 - [Demo](#demo)
+  - [Exposing apps with managed and unmanaged ingress and Azure DNS](#exposing-apps-with-managed-and-unmanaged-ingress-and-azure-dns)
   - [Access Key Vault using managed identity](#access-key-vault-using-managed-identity)
   - [Access PostgreSQL using managed identity and private link](#access-postgresql-using-managed-identity-and-private-link)
   - [Use SecretProviderClass to access Key Vault secret](#use-secretproviderclass-to-access-key-vault-secret)
@@ -20,6 +21,17 @@ To provision declarative demo use GitHub Actions. You can also run Actions to de
   - [Access jump](#access-jump)
 - [Development - test only one module example](#development---test-only-one-module-example)
   - [Destroy](#destroy)
+
+## Exposing apps with managed and unmanaged ingress and Azure DNS
+Cluster is configured with two different Ingress classes:
+- Managed Ingress with Azure Application Gateway running services on both private a public interfaces
+- Unmanaged NGINX Ingress using private interface
+
+See Ingress objects in default namespace.
+
+Cert-manager is used to automatically enroll Let's encrypt certificated to Application Gateway public Ingress.
+
+External DNS is configured to automatically create internal DNS records for apps deployed using Azure Private DNS.
 
 ## Access Key Vault using managed identity
 

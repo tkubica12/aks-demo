@@ -40,10 +40,10 @@ jobs:
         with:
           inlineScript: |
             #!/bin/bash
-            if $(az group exists -n aks-demo) ; then
+            if $(az group exists -n aks-demo2) ; then
               echo "Azure resource group already exists, skipping creation..."
             else
-              az group create -n aks-demo --location westeurope
+              az group create -n aks-demo2 --location westeurope
               echo "Azure resource group created"
             fi
 
@@ -51,7 +51,7 @@ jobs:
         uses: azure/arm-deploy@v1
         id: deploy
         with:
-          resourceGroupName: aks-demo
+          resourceGroupName: aks-demo2
           template: ./declarative/infra/maintemplate.json
           parameters: >-
             sshKey="${{ secrets.SSH_PUBLIC_KEY }}" 
@@ -68,41 +68,41 @@ jobs:
         with:
           inlineScript: |
             #!/bin/bash
-            export rg=aks-demo
+            export rg=aks-demo2
             az extension add -n aks-preview -y
-            az aks update --enable-pod-identity -n aks-demo -g $rg
+            az aks update --enable-pod-identity -n aks-demo2 -g $rg
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name aks-demo2 \
                 --namespace default \
                 --name external-dns \
                 --identity-resource-id $(az identity show -n externalDns -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name aks-demo2 \
                 --namespace default \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name aks-demo2 \
                 --namespace opentelemetry \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name aks-demo2 \
                 --namespace dapr \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name aks-demo2 \
                 --namespace keda \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name aks-demo2 \
                 --namespace default \
                 --name psql-user \
                 --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name aks-demo2 \
                 --namespace keda \
                 --name keda \
                 --identity-resource-id $(az identity show -n keda -g $rg --query id -o tsv)
@@ -111,8 +111,8 @@ jobs:
         uses: Azure/aks-set-context@v1
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
-          cluster-name: aks-demo
-          resource-group: aks-demo
+          cluster-name: aks-demo2
+          resource-group: aks-demo2
 
       - name: Prepare values.yaml
         run: | 
@@ -141,10 +141,10 @@ jobs:
           inlineScript: |
             #!/bin/bash
             az extension add --name k8s-configuration -y
-            az k8s-configuration create -c aks-demo \
+            az k8s-configuration create -c aks-demo2 \
               --cluster-type managedClusters \
               -n common \
-              -g aks-demo \
+              -g aks-demo2 \
               --operator-type flux \
               --operator-params "'--git-readonly --git-path gitops/common'" \
               --repository-url https://github.com/tkubica12/aks-demo \

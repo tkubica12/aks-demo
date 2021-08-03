@@ -37,6 +37,13 @@ resource vnet 'Microsoft.Network/virtualNetworks@2020-06-01' = {
           privateEndpointNetworkPolicies: 'Disabled'
         }
       }
+      {
+        name: 'pod-subnet'
+        properties: {
+          addressPrefix: '10.0.132.0/22'
+          privateEndpointNetworkPolicies: 'Disabled'
+        }
+      }
     ]
   }
 }
@@ -191,6 +198,7 @@ resource appGw 'Microsoft.Network/applicationGateways@2020-05-01' = {
 output vnetId string = vnet.id 
 output aksSubnetId string = '${vnet.id}/subnets/aks-subnet'
 output appgwSubnetId string = '${vnet.id}/subnets/appgw-subnet'
+output podSubnetId string = '${vnet.id}/subnets/pod-subnet'
 output intlbSubnetId string = '${vnet.id}/subnets/intlb-subnet'
 output jumpSubnetId string = '${vnet.id}/subnets/jump-subnet'
 output appgwId string = appGw.id

@@ -41,6 +41,7 @@ Implemented features
 - Distributed Tracing with Application Insights, OpenTelemetry
 - Open Service Mesh
 - DAPR
+- Scrapping Prometheus metrics using Azure Monitor
   
 # Backlog of features
 - Open Service Mesh
@@ -48,7 +49,6 @@ Implemented features
 - Scaling with KEDA
 - Azure Arc for Kubernetes (hybrid solution)
 - Azure Monitor for Containers - monitoring and telemetry
-- Scrapping Prometheus metrics using Azure Monitor
 - Grafana dashboard on top of Azure Monitor
 - Using Kibana to search logs using K2Bridge
 - Windows nodes

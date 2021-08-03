@@ -33,6 +33,7 @@ module aks './aks.bicep' = {
   name: 'aks'
   params:{
     aksSubnetId: networking.outputs.aksSubnetId
+    podSubnetId: networking.outputs.podSubnetId
     appgwId: networking.outputs.appgwId
     appgwName: networking.outputs.appgwName
     logAnalyticsResourceId: services.outputs.logAnalyticsResourceId

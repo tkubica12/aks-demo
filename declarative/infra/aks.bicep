@@ -2,6 +2,7 @@
 param sshKey string
 
 param aksSubnetId string
+param podSubnetId string
 param appgwId string
 param appgwName string
 param logAnalyticsResourceId string
@@ -168,6 +169,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
         osType: 'Linux'
         mode: 'System'
         vnetSubnetID: aksSubnetId
+        podSubnetID: podSubnetId
         availabilityZones: [
           '1'
           '2'

@@ -61,7 +61,7 @@ jobs:
             twitterConsumerSecret=${{ secrets.twitterConsumerSecret }}  
             twitterAccessToken=${{ secrets.twitterAccessToken }}  
             twitterAccessSecret=${{ secrets.twitterAccessSecret }} 
-            aksVersion="1.19.7"
+            aksVersion="1.21.2"
 
       - name: Deploy Pod identity
         uses: Azure/CLI@v1

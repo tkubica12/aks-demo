@@ -42,6 +42,14 @@ resource vnet 'Microsoft.Network/virtualNetworks@2020-06-01' = {
         properties: {
           addressPrefix: '10.0.132.0/22'
           privateEndpointNetworkPolicies: 'Disabled'
+          delegations: [
+            {
+              name: 'aks-delegation'
+              properties: {
+                serviceName: 'Microsoft.ContainerService/managedClusters'
+              }
+            }
+          ]
         }
       }
     ]

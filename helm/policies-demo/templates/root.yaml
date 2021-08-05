@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: root
+spec:
+  selector:
+    matchLabels:
+      app: root
+  template:
+    metadata:
+      labels:
+        app: root
+    spec:
+      containers:
+      - name: container
+        image: {{ .Values.acrName }}.azurecr.io/alpine:latest
+        resources:
+          limits:
+            memory: "32Mi"
+            cpu: "50m"
+        args:
+          - "tail"
+          - "-f"
+          - "/dev/null"
+        securityContext:
+          allowPrivilegeEscalation: false

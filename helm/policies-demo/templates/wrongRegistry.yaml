@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wrongregistry
+spec:
+  selector:
+    matchLabels:
+      app: wrongregistry
+  template:
+    metadata:
+      labels:
+        app: wrongregistry
+    spec:
+      containers:
+      - name: container
+        image: nginx
+        resources:
+          limits:
+            memory: "32Mi"
+            cpu: "50m"
+        args:
+          - "tail"
+          - "-f"
+          - "/dev/null"
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 1000

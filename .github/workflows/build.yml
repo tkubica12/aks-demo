@@ -131,6 +131,7 @@ jobs:
           echo keyvaultIdentity: ${{ steps.deploy.outputs.keyvaultIdentity }}  >> values.yaml
           echo appGwDns: ${{ steps.deploy.outputs.appGwDns }}  >> values.yaml
           echo storageName: ${{ steps.deploy.outputs.storageName }}  >> values.yaml
+          echo acrName: ${{ steps.deploy.outputs.acrName }}  >> values.yaml
 
       - name: Push configurations to cluster
         uses: azure/k8s-create-secret@v1

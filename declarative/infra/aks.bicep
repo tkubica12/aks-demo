@@ -29,12 +29,12 @@ resource aksIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-3
 }
 
 resource aksIdentityRoleAcr 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid('aksIdentityRoleAcr', resourceGroup().id)
-  scope: aks
+  name: guid('aksKubeletIdentityRoleAcr', resourceGroup().id)
+  scope: acr
   properties: {
     principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleContributor)
-    principalId: aksIdentity.properties.principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAcrPull)
+    principalId: aks.properties.identityProfile.kubeletidentity.clientId
   }
 }
 

@@ -421,5 +421,6 @@ output psqlHost string = psql.properties.fullyQualifiedDomainName
 output psqlUsername string = '${localUser}@${psql.name}'
 output psqlIdentityClientId string = psqlIdentity.properties.clientId
 output cognitiveServiceEndpoint string = cs.properties.endpoint
+output cognitiveServiceName string = cs.name
 output sbEndpoint string = sb.properties.serviceBusEndpoint
 output storageName string = storage.name

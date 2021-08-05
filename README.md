@@ -44,7 +44,6 @@ Implemented features
 - Scrapping Prometheus metrics using Azure Monitor
   
 # Backlog of features
-- Open Service Mesh
 - Canary and A/B testing with Flagger
 - Scaling with KEDA
 - Azure Arc for Kubernetes (hybrid solution)
@@ -55,7 +54,6 @@ Implemented features
 - Secrets management with Azure Key Vault and CSI
 - Persistent storage with Azure Disk and Azure Files
 - Security policy with Azure Policy
-- DAPR
 - Azure Functions on Kubernetes
 - Azure Logic Apps on Kubernetes
 - Azure Cognitive Services on Kubernetes

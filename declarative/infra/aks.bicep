@@ -313,7 +313,7 @@ resource wbPrometheus 'Microsoft.Insights/workbooks@2020-10-20' = {
   }
 }
 
-
 output keyvaultIdentity string = keyvaultIdentity.properties.clientId
 output aksNodeResourceGroup string = aks.properties.nodeResourceGroup
-
+output aksName string = aks.name
+output acrName string = acr.name

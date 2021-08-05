@@ -252,6 +252,8 @@ az deployment group create -g aks-demo --template-file infra/services.json \
 export keyvault=$(az deployment group show -n main -g aks-demo --query properties.outputs.keyvaultName.value -o tsv)
 az keyvault delete -g $rg -n $keyvault 
 az keyvault purge -n $keyvault 
+az cognitiveservices account delete -n 5jl6tmwrp3lkm -g aks-demo
+az cognitiveservices account purge -n 5jl6tmwrp3lkm -l westeurope -g aks-demo
 az group delete -n aks-demo -y --no-wait
 ```
 

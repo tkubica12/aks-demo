@@ -62,6 +62,15 @@ module services './services.bicep' = {
   }
 }
 
+// Azure Policy
+module policies './policies.bicep' = {
+  name: 'policies'
+  params:{
+    aksName: aks.outputs.aksName
+    acrName: aks.outputs.acrName
+  }
+}
+
 output keyvaultName string = services.outputs.keyvaultName
 output keyvaultIdentity string = aks.outputs.keyvaultIdentity
 output subscriptionId string = subscription().subscriptionId
@@ -71,3 +80,5 @@ output dnsZoneName string = networking.outputs.dnsZoneName
 output appGwDns string = networking.outputs.appGwDns
 output aksNodeResourceGroup string = aks.outputs.aksNodeResourceGroup
 output storageName string = services.outputs.storageName
+output cognitiveServiceName string = services.outputs.cognitiveServiceName
+output acrName string = aks.outputs.acrName

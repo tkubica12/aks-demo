@@ -21,4 +21,7 @@ jobs:
             export keyvault=$(az deployment group show -n maintemplate -g aks-demo --query properties.outputs.keyvaultName.value -o tsv)
             az keyvault delete -g aks-demo -n $keyvault 
             az keyvault purge -n $keyvault 
+            export cs=$(az deployment group show -n maintemplate -g aks-demo --query properties.outputs.cognitiveServiceName.value -o tsv)
+            az cognitiveservices account delete -n $cs -g aks-demo
+            az cognitiveservices account purge -n $cs -g aks-demo -l westeurope
             az group delete -n aks-demo -y

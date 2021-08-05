@@ -67,7 +67,7 @@ jobs:
         uses: Azure/CLI@v1
         with:
           inlineScript: |
-            az acr import -n ${{ steps.deploy.outputs.acrName }} --source docker.io/library/alpine:latest -t alpine:latest
+            az acr import -n ${{ steps.deploy.outputs.acrName }} --source docker.io/library/alpine:latest -t alpine:latest --force
 
       - name: Deploy Pod identity
         uses: Azure/CLI@v1

@@ -42,19 +42,20 @@ Implemented features
 - Open Service Mesh
 - DAPR
 - Scrapping Prometheus metrics using Azure Monitor
+- Grafana dashboard on top of Azure Monitor
+- Azure Monitor for Containers - monitoring and telemetry
+- Security policy with Azure Policy
   
 # Backlog of features
 - Canary and A/B testing with Flagger
 - Scaling with KEDA
 - Azure Arc for Kubernetes (hybrid solution)
-- Azure Monitor for Containers - monitoring and telemetry
-- Grafana dashboard on top of Azure Monitor
 - Using Kibana to search logs using K2Bridge
 - Windows nodes
-- Secrets management with Azure Key Vault and CSI
 - Persistent storage with Azure Disk and Azure Files
-- Security policy with Azure Policy
 - Azure Functions on Kubernetes
 - Azure Logic Apps on Kubernetes
 - Azure Cognitive Services on Kubernetes
 - Azure API Management self-hosted gateway in Kubernetes
+- Azure Defender for Kubernetes
+- Cognitive Services in containers

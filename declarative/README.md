@@ -14,6 +14,7 @@ To provision declarative demo use GitHub Actions. You can also run Actions to de
     - [Traffic Split](#traffic-split)
     - [Traffic Access Control](#traffic-access-control)
     - [Traffic Metrics](#traffic-metrics)
+  - [Security Policies with Azure Policy](#security-policies-with-azure-policy)
 - [Debug](#debug)
   - [Creating infrastructure using CLI](#creating-infrastructure-using-cli)
   - [Add identities to cluster](#add-identities-to-cluster)
@@ -179,6 +180,17 @@ kubectl exec $pod -n openservicemesh -it -- sh -c 'curl -v app2-v1.openserviceme
 
 ### Traffic Metrics
 TBD
+
+## Security Policies with Azure Policy
+Several policies are applied on cluster - see Azure Policy assignments in portal. All policies are scoped to include only namespace "secure".
+
+There are multiple deployments deployed in this namespace:
+- ok - this one is fine
+- noLimits - this is failing because there are no resource limits or limits are set over maximum defined by policy
+- root - this is failing because container attempts to run as root
+- wrongRegistry - this is failing because image is from registry non compliant with policy
+
+To see error messages find ReplicatSets belonging to each deployment and in events see reason for no Pods running.
 
 # Debug
 ## Creating infrastructure using CLI

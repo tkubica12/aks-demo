@@ -34,7 +34,7 @@ resource aksIdentityRoleAcr 'Microsoft.Authorization/roleAssignments@2020-04-01-
   properties: {
     principalType: 'ServicePrincipal'
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAcrPull)
-    principalId: aks.properties.identityProfile.kubeletidentity.clientId
+    principalId: aks.properties.identityProfile.kubeletidentity.objectId
   }
 }
 

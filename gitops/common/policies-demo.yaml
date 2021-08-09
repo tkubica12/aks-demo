@@ -3,6 +3,7 @@ kind: HelmRelease
 metadata:
   name: policies-demo
 spec:
+  targetNamespace: secure
   chart:
     git: https://github.com/tkubica12/aks-demo
     ref: master

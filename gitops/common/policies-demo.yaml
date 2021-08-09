@@ -1,7 +1,7 @@
 apiVersion: helm.fluxcd.io/v1
 kind: HelmRelease
 metadata:
-  name: basic-demo
+  name: policies-demo
 spec:
   chart:
     git: https://github.com/tkubica12/aks-demo

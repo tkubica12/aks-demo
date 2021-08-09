@@ -210,7 +210,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
         enabled: true
       }
       'gitops': {
-        enabled: true
+        enabled: false
       }
       'omsagent': {
         enabled: true

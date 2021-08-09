@@ -133,10 +133,19 @@ jobs:
           echo storageName: ${{ steps.deploy.outputs.storageName }}  >> values.yaml
           echo acrName: ${{ steps.deploy.outputs.acrName }}  >> values.yaml
 
-      - name: Push configurations to cluster
+      - name: Push configurations to cluster in default namespace
         uses: azure/k8s-create-secret@v1
         with:
           namespace: default
+          secret-type: generic
+          arguments: |
+            --from-file=values.yaml
+          secret-name: configurations
+
+      - name: Push configurations to cluster in secure namespace
+        uses: azure/k8s-create-secret@v1
+        with:
+          namespace: secure
           secret-type: generic
           arguments: |
             --from-file=values.yaml

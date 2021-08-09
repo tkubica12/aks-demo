@@ -151,21 +151,38 @@ jobs:
             --from-file=values.yaml
           secret-name: configurations
 
-      - name: Onboard cluster to GitOps
-        uses: Azure/CLI@v1
-        with:
-          inlineScript: |
-            #!/bin/bash
-            az extension add --name k8s-configuration -y
-            az k8s-configuration create -c aks-demo \
-              --cluster-type managedClusters \
-              -n common \
-              -g aks-demo \
-              --operator-type flux \
-              --operator-params "'--git-readonly --git-path gitops/common'" \
-              --repository-url https://github.com/tkubica12/aks-demo \
-              --enable-helm-operator \
-              --helm-operator-params '--set helm.versions=v3' \
-              --scope cluster
+      # - name: Onboard cluster to GitOps
+      #   uses: Azure/CLI@v1
+      #   with:
+      #     inlineScript: |
+      #       #!/bin/bash
+      #       az extension add --name k8s-configuration -y
+      #       az k8s-configuration create -c aks-demo \
+      #         --cluster-type managedClusters \
+      #         -n common \
+      #         -g aks-demo \
+      #         --operator-type flux \
+      #         --operator-params "'--git-readonly --git-path gitops/common'" \
+      #         --repository-url https://github.com/tkubica12/aks-demo \
+      #         --enable-helm-operator \
+      #         --helm-operator-params '--set helm.versions=v3' \
+      #         --scope cluster
+
+      # - name: Onboard cluster to Arc
+      #   uses: Azure/CLI@v1
+      #   with:
+      #     inlineScript: |
+      #       #!/bin/bash
+      #       az extension add --name connectedk8s -y
+      #       az extension add --name k8s-extension -y
+      #       az connectedk8s connect -g aks-demo -n aks-demo --custom-locations-oid '51dfe1e8-70c6-4de5-a08e-e18aff23d815'
+      #       az k8s-extension create -c aks-demo -g aks-demo --name arc-data-services \
+      #         --cluster-type connectedClusters --extension-type microsoft.arcdataservices \
+      #         --auto-upgrade true --scope cluster --release-namespace arc --config Microsoft.CustomLocation.ServiceAccount=sa-bootstrapper
+      #       export hostClusterId=$(az connectedk8s show -g aks-demo -n aks-demo --query id -o tsv)
+      #       export extensionId=$(az k8s-extension show -g aks-demo -c aks-demo --cluster-type connectedClusters --name arc-data-services --query id -o tsv)
+      #       az customlocation create -g aks-demo -n aks-demo-location --namespace arc \
+      #         --host-resource-id ${hostClusterId} \
+      #         --cluster-extension-ids ${extensionId} --location westeurope
 
       

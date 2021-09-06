@@ -1,0 +1,32 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8snodeaffinity
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sNodeAffinity
+      validation:
+        openAPIV3Schema:
+          properties:
+            labels:
+              type: array
+              items: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package nodeAffinity
+
+        # Check nodeAffinity rule exist
+        violation[{"msg": msg, "details": {}}] {
+          not input.review.object.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0]
+          msg := "Pods must be assigned to specific nodepool using spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms.matchExpressions containing  {\"key\": \"type\", \"operator\": \"In\", \"values\": [\"protected\"]}; found no matchExpressions"
+        }
+
+        # Check nodeAffinity rule contains required match expression
+        violation[{"msg": msg, "details": {}}] {
+          nodeMatch := input.review.object.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[i].matchExpressions[i]
+          not nodeMatch == {"key": "type", "operator": "In", "values": input.parameters.labels[_]}
+          msg := sprintf("Pods must be assigned to specific nodepool using spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms.matchExpressions containing  {\"key\": \"type\", \"operator\": \"In\", \"values\": [\"protected\"]}; found `%v`", [nodeMatch])
+        }

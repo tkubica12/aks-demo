@@ -16,7 +16,7 @@ spec:
   targets:
     - target: admission.k8s.gatekeeper.sh
       rego: |
-        package nodeAffinity
+        package k8snodeaffinity
 
         # Check nodeAffinity rule exist
         violation[{"msg": msg, "details": {}}] {

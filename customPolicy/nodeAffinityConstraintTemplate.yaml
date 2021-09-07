@@ -27,6 +27,6 @@ spec:
         # Check nodeAffinity rule contains required match expression
         violation[{"msg": msg, "details": {}}] {
           nodeMatch := input.review.object.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[i].matchExpressions[i]
-          not nodeMatch == {"key": "type", "operator": "In", "values": input.parameters.nodeLabels[_]}
+          not nodeMatch == {"key": "type", "operator": "In", "values": input.parameters.nodeLabels}
           msg := sprintf("Pods must be assigned to specific nodepool using spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms.matchExpressions containing  {\"key\": \"type\", \"operator\": \"In\", \"values\": [\"protected\"]}; found `%v`", [nodeMatch])
         }

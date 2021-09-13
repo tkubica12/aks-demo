@@ -1,6 +1,6 @@
 param aksName string
 param acrName string
-
+param KubernetesNodeAffinity string
 resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' existing = {
   name: aksName
 }
@@ -142,6 +142,31 @@ resource allowedImages 'Microsoft.Authorization/policyAssignments@2019-09-01' = 
         }
         allowedContainerImagesRegex: {
           value: '^${acrName}.azurecr.io/.+$'
+        }
+      }
+  }
+}
+
+// CUSTOM: Require Pods to run on specified Nodes
+resource nodeAffinity 'Microsoft.Authorization/policyAssignments@2019-09-01' = {
+  name: 'nodeAffinity'
+  scope: aks
+  properties: {
+      displayName: 'Require Pods to run on specified Nodes'
+      policyDefinitionId: KubernetesNodeAffinity
+      parameters: {
+        effect: {
+          value: 'deny'
+        }
+        namespaces: {
+          value: [
+            'secure'
+          ]
+        }
+        nodeLabels: {
+          value: [
+            'protected'
+          ]
         }
       }
   }

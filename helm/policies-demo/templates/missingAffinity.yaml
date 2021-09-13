@@ -1,24 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ok
+  name: missing-affinity
 spec:
   selector:
     matchLabels:
-      app: ok
+      app: missing-affinity
   template:
     metadata:
       labels:
-        app: ok
+        app: missing-affinity
     spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: type
-                    operator: In
-                    values: ["protected"]
       containers:
       - name: container
         image: {{ .Values.acrName }}.azurecr.io/alpine:latest

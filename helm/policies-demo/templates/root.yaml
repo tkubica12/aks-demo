@@ -11,6 +11,14 @@ spec:
       labels:
         app: root
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: type
+                    operator: In
+                    values: ["protected"]
       containers:
       - name: container
         image: {{ .Values.acrName }}.azurecr.io/alpine:latest

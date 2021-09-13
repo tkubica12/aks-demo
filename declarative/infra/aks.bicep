@@ -176,6 +176,9 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
           '3'
         ]
         maxPods: 100
+        nodeLabels: {
+          type: 'protected'
+        }
       }
     ]
     linuxProfile: {

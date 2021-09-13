@@ -63,11 +63,20 @@ module services './services.bicep' = {
 }
 
 // Azure Policy
-module policies './policies.bicep' = {
-  name: 'policies'
+module policyDefinitions './policyDefinitions.bicep' = {
+  name: 'policyDefinitions'
+  scope: subscription()
+}
+
+module policyAssignments './policyAssignments.bicep' = {
+  name: 'policyAssignments'
+  dependsOn: [
+    policyDefinitions
+  ]
   params:{
     aksName: aks.outputs.aksName
     acrName: aks.outputs.acrName
+    KubernetesNodeAffinity: policyDefinitions.outputs.KubernetesNodeAffinity
   }
 }
 

@@ -179,14 +179,14 @@ jobs:
               --scope cluster
 
 
-      - name: Onboard Arc Data Controller
-        uses: Azure/CLI@v1
-        with:
-          inlineScript: |
-            #!/bin/bash
-            az k8s-extension create -c aks-demo -g aks-demo --name arc-data-services \
-              --cluster-type connectedClusters --extension-type microsoft.arcdataservices \
-              --auto-upgrade true --scope cluster --release-namespace azure-arc --config Microsoft.CustomLocation.ServiceAccount=sa-bootstrapper
+      # - name: Onboard Arc Data Controller
+      #   uses: Azure/CLI@v1
+      #   with:
+      #     inlineScript: |
+      #       #!/bin/bash
+      #       az k8s-extension create -c aks-demo -g aks-demo --name arc-data-services \
+      #         --cluster-type connectedClusters --extension-type microsoft.arcdataservices \
+      #         --auto-upgrade true --scope cluster --release-namespace azure-arc --config Microsoft.CustomLocation.ServiceAccount=sa-bootstrapper
 
 
       # - name: Onboard cluster to Arc

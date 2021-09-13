@@ -1,0 +1,147 @@
+targetScope='subscription'
+
+resource KubernetesNodeAffinity 'Microsoft.Authorization/policyDefinitions@2020-09-01' = {
+  name: 'KubernetesNodeAffinity'
+  properties: {
+    policyType: 'Custom'
+    mode: 'Microsoft.Kubernetes.Data'
+    displayName: 'Require Pods to run on specified Nodes'
+    description: 'This policy checks for nodeAffinity rules to specify required labels nodes must have configured. This is typically used to make sure namespace Pods are always allocated to specific NodePool.'
+    parameters: {
+      effect: {
+        type: 'String'
+        metadata: {
+          displayName: 'Effect'
+          description: 'audit allows a non-compliant resource to be created or updated, but flags it as non-compliant. deny blocks the non-compliant resource creation or update. disabled turns off the policy.'
+        }
+        allowedValues: [
+          'audit'
+          'deny'
+          'disabled'
+        ]
+        defaultValue: 'deny'
+      }
+      excludedNamespaces: {
+        type: 'Array'
+        metadata: {
+          displayName: 'Namespace exclusions'
+          description: 'List of Kubernetes namespaces to exclude from policy evaluation.'
+        }
+        defaultValue: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+        ]
+      }
+      namespaces: {
+        type: 'Array'
+        metadata: {
+          displayName: 'Namespace inclusions'
+          description: 'List of Kubernetes namespaces to only include in policy evaluation. An empty list means the policy is applied to all resources in all namespaces.'
+        }
+        defaultValue: [
+          'kube-system'
+          'gatekeeper-system'
+          'azure-arc'
+        ]
+      }
+      labelSelector: {
+        type: 'Object'
+        metadata: {
+          displayName: 'Kubernetes label selector'
+          description: 'Label query to select Kubernetes resources for policy evaluation. An empty label selector matches all Kubernetes resources.'
+        }
+        defaultValue: {}
+        schema: {
+          description: 'A label selector is a label query over a set of resources. The result of matchLabels and matchExpressions are ANDed. An empty label selector matches all resources.'
+          type: 'object'
+          properties: {
+            matchLabels: {
+              description: 'matchLabels is a map of {key,value} pairs.'
+              type: 'object'
+              additionalProperties: {
+                type: 'string'
+              }
+              minProperties: 1
+            }
+            matchExpressions: {
+              description: 'matchExpressions is a list of values, a key, and an operator.'
+              type: 'array'
+              items: {
+                type: 'object'
+                properties: {
+                  key: {
+                    description: 'key is the label key that the selector applies to.'
+                    type: 'string'
+                  }
+                  operator: {
+                    description: 'operator represents a keys relationship to a set of values.'
+                    type: 'string'
+                    enum: [
+                      'In'
+                      'NotIn'
+                      'Exists'
+                      'DoesNotExist'
+                    ]
+                  }
+                  values: {
+                    description: 'values is an array of string values. If the operator is In or NotIn, the values array must be non-empty. If the operator is Exists or DoesNotExist, the values array must be empty.'
+                    type: 'array'
+                    items: {
+                      type: 'string'
+                    }
+                  }
+                }
+                required: [
+                  'Key'
+                  'Operator'
+                ]
+                additionalProperties: false
+              }
+              minItems: 1
+            }
+          }
+          additionalProperties: false
+        }
+      }
+      nodeLabels: {
+        type: 'Array'
+        metadata: {
+          displayName: 'Node labels array'
+          description: 'Array of labels of node that Pods must be assigned to'
+        }
+      }
+    }
+    policyRule: {
+      if: {
+        field: 'type'
+        in: [
+          'Microsoft.ContainerService/managedClusters'
+        ]
+      }
+      then: {
+        effect: '[parameters(\'effect\')]'
+        details: {
+          templateInfo: {
+            sourceType: 'PublicURL'
+            url: 'https://raw.githubusercontent.com/tkubica12/aks-demo/master/customPolicy/nodeAffinityConstraintTemplate.yaml'
+          }
+          apiGroups: [
+            '*'
+          ]
+          kinds: [
+            'Pod'
+          ]
+          namespaces: '[parameters(\'namespaces\')]'
+          excludedNamespaces: '[parameters(\'excludedNamespaces\')]'
+          labelSelector: '[parameters(\'labelSelector\')]'
+          values: {
+            nodeLabels: '[parameters(\'nodeLabels\')]'
+          }
+        }
+      }
+    }
+  }
+}
+
+output KubernetesNodeAffinity string = KubernetesNodeAffinity.id

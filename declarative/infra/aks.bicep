@@ -261,7 +261,7 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
 }
 
 resource acr 'Microsoft.ContainerRegistry/registries@2020-11-01-preview' = {
-  name: uniqueString(subscription().id)
+  name: uniqueString(resourceGroup().id)
   location: location
   sku: {
     name: 'Standard'

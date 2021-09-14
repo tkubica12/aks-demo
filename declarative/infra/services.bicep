@@ -16,7 +16,7 @@ var roleKeyVaultAministrator = '00482a5a-887f-4fb3-b363-3b7fe8e74483'
 
 // Key Vault
 resource keyvault 'Microsoft.KeyVault/vaults@2019-09-01' = {
-  name: 'kv-${uniqueString(subscription().id)}'
+  name: 'kv-${uniqueString(resourceGroup().id)}'
   location: location
   properties: {
     tenantId: subscription().tenantId
@@ -53,7 +53,7 @@ resource kvSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
 
 // Azure Database for PostgreSQL
 resource psql 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
-  name: 'psql-${uniqueString(subscription().id)}'
+  name: 'psql-${uniqueString(resourceGroup().id)}'
   location: location
   identity: {
     type: 'SystemAssigned'
@@ -132,7 +132,7 @@ resource plinkPsqlDns 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2
 
 // Monitoring workspace
 resource logs 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
-  name: uniqueString(subscription().id)
+  name: uniqueString(resourceGroup().id)
   location: location
   properties: {
     sku: {
@@ -146,7 +146,7 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
 // Monitoring OpenTelemetry
 
 resource appinsights 'Microsoft.Insights/components@2020-02-02-preview' = {
-  name: uniqueString(subscription().id)
+  name: uniqueString(resourceGroup().id)
   location: location
   kind: 'web'
   properties: {
@@ -179,7 +179,7 @@ resource kvAppInsightsStringSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01
 
 // Monitoring DAPR
 resource daprLogs 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
-  name: 'dapr${uniqueString(subscription().id)}'
+  name: 'dapr${uniqueString(resourceGroup().id)}'
   location: location
   properties: {
     sku: {
@@ -189,7 +189,7 @@ resource daprLogs 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' 
 }
 
 resource daprAppinsights 'Microsoft.Insights/components@2020-02-02-preview' = {
-  name: 'dapr${uniqueString(subscription().id)}'
+  name: 'dapr${uniqueString(resourceGroup().id)}'
   location: location
   kind: 'web'
   properties: {
@@ -222,7 +222,7 @@ resource kvDaprAppInsightsStringSecret 'Microsoft.KeyVault/vaults/secrets@2019-0
 
 // Monitoring Open Service Mesh
 resource osmLogs 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
-  name: 'osm${uniqueString(subscription().id)}'
+  name: 'osm${uniqueString(resourceGroup().id)}'
   location: location
   properties: {
     sku: {
@@ -232,7 +232,7 @@ resource osmLogs 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' =
 }
 
 resource osmAppinsights 'Microsoft.Insights/components@2020-02-02-preview' = {
-  name: 'osm${uniqueString(subscription().id)}'
+  name: 'osm${uniqueString(resourceGroup().id)}'
   location: location
   kind: 'web'
   properties: {
@@ -265,7 +265,7 @@ resource kvOsmAppInsightsStringSecret 'Microsoft.KeyVault/vaults/secrets@2019-09
 
 // Storage account
 resource storage 'Microsoft.Storage/storageAccounts@2019-06-01' = {
-  name: uniqueString(subscription().id)
+  name: uniqueString(resourceGroup().id)
   location: location
   kind: 'Storage'
   sku: {
@@ -299,14 +299,14 @@ resource kvStorageAccount 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
 
 // Cognitive services
 resource cs 'Microsoft.CognitiveServices/accounts@2017-04-18' = {
-  name: uniqueString(subscription().id)
+  name: uniqueString(resourceGroup().id)
   kind: 'CognitiveServices'
   location: location
   sku: {
     name: 'S0'
   }
   properties: {
-    customSubDomainName: uniqueString(subscription().id)
+    customSubDomainName: uniqueString(resourceGroup().id)
   }
 }
 
@@ -342,7 +342,7 @@ resource kvStorageString 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
 
 // Service Bus
 resource sb 'Microsoft.ServiceBus/namespaces@2017-04-01' = {
-  name: 'sb${uniqueString(subscription().id)}'
+  name: 'sb${uniqueString(resourceGroup().id)}'
   location: location
   sku: {
     name: 'Standard'

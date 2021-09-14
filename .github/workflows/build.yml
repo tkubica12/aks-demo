@@ -1,18 +1,12 @@
 name: Build AKS demo
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
 on:
   workflow_dispatch:
-    # Inputs the workflow accepts.
-    # inputs:
-      # name:
-        # Friendly description to be shown in the UI instead of 'name'
-        # description: 'Person to greet'
-        # Default value if no value is explicitly provided
-        # default: 'World'
-        # Input has to be provided for the workflow to run
-        # required: true
+    inputs:
+      rgName:
+        description: 'Resource Group name'
+        default: 'aks-demo'
+
 jobs:
   deployAksDemo:
     runs-on: ubuntu-latest
@@ -40,10 +34,10 @@ jobs:
         with:
           inlineScript: |
             #!/bin/bash
-            if $(az group exists -n aks-demo) ; then
+            if $(az group exists -n ${{ github.event.inputs.rgName }}) ; then
               echo "Azure resource group already exists, skipping creation..."
             else
-              az group create -n aks-demo --location westeurope
+              az group create -n ${{ github.event.inputs.rgName }} --location westeurope
               echo "Azure resource group created"
             fi
 
@@ -51,7 +45,7 @@ jobs:
         uses: azure/arm-deploy@v1
         id: deploy
         with:
-          resourceGroupName: aks-demo
+          resourceGroupName: ${{ github.event.inputs.rgName }}
           template: ./declarative/infra/maintemplate.json
           parameters: >-
             sshKey="${{ secrets.SSH_PUBLIC_KEY }}" 
@@ -74,41 +68,41 @@ jobs:
         with:
           inlineScript: |
             #!/bin/bash
-            export rg=aks-demo
+            export rg=${{ github.event.inputs.rgName }}
             az extension add -n aks-preview -y
-            az aks update --enable-pod-identity -n aks-demo -g $rg
+            az aks update --enable-pod-identity -n ${{ github.event.inputs.rgName }} -g $rg
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name ${{ github.event.inputs.rgName }} \
                 --namespace default \
                 --name external-dns \
                 --identity-resource-id $(az identity show -n externalDns -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name ${{ github.event.inputs.rgName }} \
                 --namespace default \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name ${{ github.event.inputs.rgName }} \
                 --namespace opentelemetry \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name ${{ github.event.inputs.rgName }} \
                 --namespace dapr \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name ${{ github.event.inputs.rgName }} \
                 --namespace keda \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name ${{ github.event.inputs.rgName }} \
                 --namespace default \
                 --name psql-user \
                 --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name aks-demo \
+                --cluster-name ${{ github.event.inputs.rgName }} \
                 --namespace keda \
                 --name keda \
                 --identity-resource-id $(az identity show -n keda -g $rg --query id -o tsv)
@@ -118,7 +112,7 @@ jobs:
         with:
           creds: '${{ secrets.AZURE_CREDENTIALS }}'
           cluster-name: aks-demo
-          resource-group: aks-demo
+          resource-group: ${{ github.event.inputs.rgName }}
 
       - name: Prepare values.yaml
         run: | 
@@ -168,7 +162,7 @@ jobs:
             #!/bin/bash
             az extension add --name connectedk8s -y
             az extension add --name k8s-extension -y
-            az connectedk8s connect -g aks-demo -n aks-demo --custom-locations-oid '51dfe1e8-70c6-4de5-a08e-e18aff23d815'
+            az connectedk8s connect -g ${{ github.event.inputs.rgName }} -n aks-demo --custom-locations-oid '51dfe1e8-70c6-4de5-a08e-e18aff23d815'
 
       - name: Onboard cluster to GitOps
         uses: Azure/CLI@v1
@@ -179,7 +173,7 @@ jobs:
             az k8s-configuration create -c aks-demo \
               --cluster-type connectedClusters \
               -n common \
-              -g aks-demo \
+              -g ${{ github.event.inputs.rgName }} \
               --operator-type flux \
               --operator-params "'--git-readonly --git-path gitops/common'" \
               --repository-url https://github.com/tkubica12/aks-demo \
@@ -193,7 +187,7 @@ jobs:
       #   with:
       #     inlineScript: |
       #       #!/bin/bash
-      #       az k8s-extension create -c aks-demo -g aks-demo --name arc-data-services \
+      #       az k8s-extension create -c aks-demo -g ${{ github.event.inputs.rgName }} --name arc-data-services \
       #         --cluster-type connectedClusters --extension-type microsoft.arcdataservices \
       #         --auto-upgrade true --scope cluster --release-namespace azure-arc --config Microsoft.CustomLocation.ServiceAccount=sa-bootstrapper
 
@@ -205,20 +199,20 @@ jobs:
       #       #!/bin/bash
       #       az extension add --name connectedk8s -y
       #       az extension add --name k8s-extension -y
-      #       az connectedk8s connect -g aks-demo -n aks-demo --custom-locations-oid '51dfe1e8-70c6-4de5-a08e-e18aff23d815'
-      #       az k8s-extension create -c aks-demo -g aks-demo --name arc-data-services \
+      #       az connectedk8s connect -g ${{ github.event.inputs.rgName }} -n aks-demo --custom-locations-oid '51dfe1e8-70c6-4de5-a08e-e18aff23d815'
+      #       az k8s-extension create -c aks-demo -g ${{ github.event.inputs.rgName }} --name arc-data-services \
       #         --cluster-type connectedClusters --extension-type microsoft.arcdataservices \
       #         --auto-upgrade true --scope cluster --release-namespace azure-arc --config Microsoft.CustomLocation.ServiceAccount=sa-bootstrapper
-            # export hostClusterId=$(az connectedk8s show -g aks-demo -n aks-demo --query id -o tsv)
-            # export extensionId=$(az k8s-extension show -g aks-demo -c aks-demo --cluster-type connectedClusters --name arc-data-services --query id -o tsv)
-            # az customlocation create -g aks-demo -n aks-demo-location --namespace azure-arc \
+            # export hostClusterId=$(az connectedk8s show -g ${{ github.event.inputs.rgName }} -n aks-demo --query id -o tsv)
+            # export extensionId=$(az k8s-extension show -g ${{ github.event.inputs.rgName }} -c aks-demo --cluster-type connectedClusters --name arc-data-services --query id -o tsv)
+            # az customlocation create -g ${{ github.event.inputs.rgName }} -n aks-demo-location --namespace azure-arc \
             #   --host-resource-id ${hostClusterId} \
             #   --cluster-extension-ids ${extensionId} --location westeurope
 
       #       az k8s-configuration create -c aks-demo \
       #         --cluster-type connectedClusters \
       #         -n common \
-      #         -g aks-demo \
+      #         -g ${{ github.event.inputs.rgName }} \
       #         --operator-type flux \
       #         --operator-params "'--git-readonly --git-path gitops/common'" \
       #         --repository-url https://github.com/tkubica12/aks-demo \

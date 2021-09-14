@@ -133,6 +133,15 @@ jobs:
           echo storageName: ${{ steps.deploy.outputs.storageName }}  >> values.yaml
           echo acrName: ${{ steps.deploy.outputs.acrName }}  >> values.yaml
 
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v1
+        # with:
+        #   version: '<version>' # default is latest stable
+        # id: install
+
+      - name: Create namespace
+        run: kubectl create namespace secure
+
       - name: Push configurations to cluster in default namespace
         uses: azure/k8s-create-secret@v1
         with:

@@ -70,7 +70,7 @@ jobs:
             #!/bin/bash
             export rg=${{ github.event.inputs.rgName }}
             az extension add -n aks-preview -y
-            az aks update --enable-pod-identity -n ${{ github.event.inputs.rgName }} -g $rg
+            az aks update --enable-pod-identity -n aks-demo -g $rg
             az aks pod-identity add -g $rg \
                 --cluster-name aks-demo \
                 --namespace default \

@@ -72,37 +72,37 @@ jobs:
             az extension add -n aks-preview -y
             az aks update --enable-pod-identity -n ${{ github.event.inputs.rgName }} -g $rg
             az aks pod-identity add -g $rg \
-                --cluster-name ${{ github.event.inputs.rgName }} \
+                --cluster-name aks-demo \
                 --namespace default \
                 --name external-dns \
                 --identity-resource-id $(az identity show -n externalDns -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name ${{ github.event.inputs.rgName }} \
+                --cluster-name aks-demo \
                 --namespace default \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name ${{ github.event.inputs.rgName }} \
+                --cluster-name aks-demo \
                 --namespace opentelemetry \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name ${{ github.event.inputs.rgName }} \
+                --cluster-name aks-demo \
                 --namespace dapr \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name ${{ github.event.inputs.rgName }} \
+                --cluster-name aks-demo \
                 --namespace keda \
                 --name secrets-reader \
                 --identity-resource-id $(az identity show -n secretsReader -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name ${{ github.event.inputs.rgName }} \
+                --cluster-name aks-demo \
                 --namespace default \
                 --name psql-user \
                 --identity-resource-id $(az identity show -n psqlUser -g $rg --query id -o tsv)
             az aks pod-identity add -g $rg \
-                --cluster-name ${{ github.event.inputs.rgName }} \
+                --cluster-name aks-demo \
                 --namespace keda \
                 --name keda \
                 --identity-resource-id $(az identity show -n keda -g $rg --query id -o tsv)

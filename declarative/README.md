@@ -14,6 +14,7 @@ To provision declarative demo use GitHub Actions. You can also run Actions to de
     - [Traffic Split](#traffic-split)
     - [Traffic Access Control](#traffic-access-control)
     - [Traffic Metrics](#traffic-metrics)
+    - [Ingress](#ingress)
   - [Security Policies with Azure Policy](#security-policies-with-azure-policy)
 - [Debug](#debug)
   - [Creating infrastructure using CLI](#creating-infrastructure-using-cli)
@@ -179,6 +180,9 @@ kubectl exec $pod -n openservicemesh -it -- sh -c 'curl -v app2-v1.openserviceme
 ```
 
 ### Traffic Metrics
+TBD
+
+### Ingress
 TBD
 
 ## Security Policies with Azure Policy

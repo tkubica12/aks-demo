@@ -7,7 +7,7 @@ There are two different styles of demos here:
 - **Imperative** demo is using CLI tools and step by step process. With this approach you can start from empty environment building things layered on top allowing you to better understand what those components are and how they interact. Purpose of this demo is to learn details of features and components, not to demonstrate overall solution, outcomes, operations or deployment procedures.
 - **Declarative** demo is using orchestration tools and CI/CD to deploy complete solution with all demos on single "click". Main purpose is to quickly spin up complete environment to demonstrate monitoring, running apps and explain technologies used.
 
-Follow [Imperative guide](./imperative/README.md) or [Declarative guide](./imperative/README.md).
+Follow [Imperative guide](./imperative/README.md) or [Declarative guide](./declarative/README.md).
 
 # Design goals for imperative demo
 - Reproducible everywhere - no dependencies, everything can be done in any Azure subscription just by issuing the same commands
